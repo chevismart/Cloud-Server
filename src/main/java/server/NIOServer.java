@@ -1,5 +1,7 @@
 package server;
 
+import org.gamecenter.serializer.HeaderFilter;
+
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -83,8 +85,9 @@ public class NIOServer {
                         // 控制台打印出来
                         System.out.println("接收到信息:"+receivedString);
 
+
                         // 准备发送的文本
-                        String sendString="你好,客户端. 已经收到你的信息"+receivedString;
+                        String sendString="你好,客户端. 已经收到你的信息"+ receivedString;
 
                         // 将要发送的字符串编码(使用Charset进行编码)后再进行包装
                         buffer=ByteBuffer.wrap(sendString.getBytes(LocalCharsetName));
