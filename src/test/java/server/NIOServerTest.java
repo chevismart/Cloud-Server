@@ -1,5 +1,7 @@
 package server;
 
+import ch.qos.logback.core.encoder.ByteArrayUtil;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -15,8 +17,11 @@ public class NIOServerTest {
 
         // 输出
         PrintWriter out = new PrintWriter(outStream, true);
-
-        out.print("getPublicKey你好！");
+        String str = new String(new byte[]{0x2a, 0x01, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x01, 0x10, 0x04, 0x00, 0x59, 0x00, 0x00, 0x00, 0x23}, "UTF-8");
+        System.err.println(str);
+        System.err.println(str.length());
+        System.err.println(ByteArrayUtil.toHexString(str.getBytes()));
+        out.print(str);
         out.flush();
 
         s.shutdownOutput();// 输出结束

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by Boss on 2014/8/7.
  */
-public class CodecFactory implements ProtocolCodecFactory {
+public class MyCodecFactory implements ProtocolCodecFactory {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -21,6 +21,7 @@ public class CodecFactory implements ProtocolCodecFactory {
             @Override
             public void encode(IoSession ioSession, Object o, ProtocolEncoderOutput protocolEncoderOutput) throws Exception {
                 logger.info("This is encode");
+
             }
 
             @Override
