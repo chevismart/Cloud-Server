@@ -50,7 +50,7 @@ public class MinaLongConnServerTest {
                 // 输出
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-                out.print(new byte[]{0x01});
+                out.print(new byte[]{0x2a, 0x01, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x01, 0x10, 0x04, 0x00, 0x59, 0x00, 0x00, 0x00, 0x23});
                 out.flush();
             }
 

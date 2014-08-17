@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -62,30 +63,55 @@ public class MinaLongConnServerHandler implements IoHandler {
     @Override
     public void messageReceived(IoSession session, Object message) throws IllegalAccessException, NoSuchFieldException, IOException {
 
+        logger.info("Message received in the long connect server...");
+
+        String expression = message.toString();
+
+        Initialization init = Initialization.getInstance();
+
+        HashMap<String, IoSession> clientMap =init.getClientMap();
+
+        if (clientMap == null || clientMap.size() == 0) {
+
+            session.write("error");
+
+        } else {
+
+            IoSession longConnSession = null;
+
+            Iterator<String> iterator =clientMap.keySet().iterator();
+
+            String key = "";
+
+            while (iterator.hasNext()) {
+
+                key = iterator.next();
+
+                longConnSession = clientMap.get(key);
+
+            }
+
+            logger.info("LongConnect Server Session ID :"+String.valueOf(longConnSession.getId()));
+
+            longConnSession.setAttribute("shortConnSession",session);
+
+            longConnSession.write(expression);
+
+        }
+
+
+
+        //////////////////////////
+
         Map<MessageType,byte[]> messageMap = (Map<MessageType, byte[]>) message;
 
 
 
         LoginRequest request = new LoginRequest();
         request.parse(messageMap.get(MessageType.LoginRequest));
-        String sw = ByteArrayUtil.toHexString(request.getCenterId());
-        System.err.println();
-//        String msg=new String(b);
-//
-//        System.out.println("收到客户端发来的消息为" + "  " + msg);
+        String msg = ByteArrayUtil.toHexString(request.getCenterId());
 
-
-        logger.info("Message received in the long connect server..");
-
-        String expression = message.toString();
-
-        logger.info("Message is:" + expression);
-
-//        IoSession shortConnSession = (IoSession) session.getAttribute("shortConnSession");
-//
-//        logger.info("ShortConnect Server Session ID =" + String.valueOf(shortConnSession.getId()));
-//
-//        shortConnSession.write(expression);
+        System.out.println("收到客户端发来的消息为" + "  " + msg);
 
     }
 
