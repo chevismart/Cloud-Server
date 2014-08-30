@@ -1,4 +1,4 @@
-package server.Filter;
+package com.gamecenter.filter.tcp;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;

@@ -1,4 +1,4 @@
-package com.gamecenter.tcpFilter;
+package com.gamecenter.filter.tcp;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
 import org.apache.mina.core.buffer.IoBuffer;
