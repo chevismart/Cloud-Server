@@ -7,7 +7,7 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import com.gamecenter.filter.CodecFactory;
+import com.gamecenter.filter.tcp.CodecFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -27,8 +27,8 @@ public class MinaLongConnServer implements Server {
             acceptor.getFilterChain().addLast("logger", new LoggingFilter());
 //        acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"))));
             acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(new CodecFactory()));
-//        ProtocolCodecFilter filter= new ProtocolCodecFilter(new ObjectSerializationCodecFactory());
-//        acceptor.getFilterChain().addLast("objectFilter", filter);
+//        ProtocolCodecFilter tcp= new ProtocolCodecFilter(new ObjectSerializationCodecFactory());
+//        acceptor.getFilterChain().addLast("objectFilter", tcp);
 
             acceptor.setHandler(new MinaTcpLongConnServerHandler());
 
