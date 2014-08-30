@@ -1,4 +1,4 @@
-package server;
+package com.gamecenter.model;
 
 import org.apache.mina.core.session.IoSession;
 

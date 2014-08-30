@@ -39,7 +39,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>server.MinaLongConnServer</mainClass>
+                            <mainClass>com.gamecenter.server.tcp.MinaLongConnServer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

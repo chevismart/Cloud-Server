@@ -1,11 +1,11 @@
-package server;
+package com.gamecenter.handler;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
+import com.gamecenter.model.Initialization;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.gamecenter.serializer.constants.MessageType;
-import org.gamecenter.serializer.messages.MessageHeader;
 import org.gamecenter.serializer.messages.downStream.LoginResponse;
 import org.gamecenter.serializer.messages.upStream.LoginRequest;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * Created by Boss on 2014/8/6.
  */
-public class MinaLongConnServerHandler implements IoHandler {
+public class MinaTcpLongConnServerHandler implements IoHandler {
 
     private final Logger logger = (Logger) LoggerFactory.getLogger(getClass());
 
