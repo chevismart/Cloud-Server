@@ -24,7 +24,7 @@ public class DownStreamEncoder implements ProtocolEncoder {
 //        buf.putShort((short) type);//type字段占2个字节(short)
 //        buf.putInt(message.getSequence());// sequence字段占4个字节(int)
 
-        buf.put(this.getClass().getSimpleName().getBytes());
+        buf.put((byte[])o);
 
         // 编码消息体,由子类实现
 //        encodeBody(session, message, buf);

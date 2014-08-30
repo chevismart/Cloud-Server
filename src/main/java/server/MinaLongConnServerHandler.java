@@ -1,13 +1,12 @@
 package server;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
-import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.service.IoHandler;
-import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.gamecenter.serializer.constants.MessageType;
-import org.gamecenter.serializer.messages.downStream.PowerControlRequest;
+import org.gamecenter.serializer.messages.MessageHeader;
+import org.gamecenter.serializer.messages.downStream.LoginResponse;
 import org.gamecenter.serializer.messages.upStream.LoginRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +45,6 @@ public class MinaLongConnServerHandler implements IoHandler {
         Initialization init = Initialization.getInstance();
 
 
-
         HashMap<String, IoSession> clientMap = init.getClientMap();
 
         clientMap.put(clientIp, session);
@@ -65,11 +63,25 @@ public class MinaLongConnServerHandler implements IoHandler {
 
         logger.info("Message received in the long connect server...");
 
+
+        //////////////////////////
+
+        Map<MessageType, byte[]> messageMap = (Map<MessageType, byte[]>) message;
+
+
+        LoginRequest request = new LoginRequest();
+        request.parse(messageMap.get(MessageType.LoginRequest));
+        String msg = ByteArrayUtil.toHexString(request.getCenterId());
+
+        System.out.println("收到客户端发来的消息为" + "  " + msg);
+
+
+
         String expression = message.toString();
 
         Initialization init = Initialization.getInstance();
 
-        HashMap<String, IoSession> clientMap =init.getClientMap();
+        HashMap<String, IoSession> clientMap = init.getClientMap();
 
         if (clientMap == null || clientMap.size() == 0) {
 
@@ -79,7 +91,7 @@ public class MinaLongConnServerHandler implements IoHandler {
 
             IoSession longConnSession = null;
 
-            Iterator<String> iterator =clientMap.keySet().iterator();
+            Iterator<String> iterator = clientMap.keySet().iterator();
 
             String key = "";
 
@@ -91,33 +103,26 @@ public class MinaLongConnServerHandler implements IoHandler {
 
             }
 
-            logger.info("LongConnect Server Session ID :"+String.valueOf(longConnSession.getId()));
+            logger.info("LongConnect Server Session ID :" + String.valueOf(longConnSession.getId()));
 
-            longConnSession.setAttribute("shortConnSession",session);
+            longConnSession.setAttribute("shortConnSession", session);
 
-            longConnSession.write(expression);
+            LoginResponse response = new LoginResponse();
+            response.setHeader(request.getHeader());
+            logger.info("Message will be sent = {}",ByteArrayUtil.toHexString(response.build()));
+            longConnSession.write(response.build());
+
+
 
         }
 
 
 
-        //////////////////////////
-
-        Map<MessageType,byte[]> messageMap = (Map<MessageType, byte[]>) message;
-
-
-
-        LoginRequest request = new LoginRequest();
-        request.parse(messageMap.get(MessageType.LoginRequest));
-        String msg = ByteArrayUtil.toHexString(request.getCenterId());
-
-        System.out.println("收到客户端发来的消息为" + "  " + msg);
-
     }
 
     @Override
     public void messageSent(IoSession ioSession, Object o) throws Exception {
-        logger.info("Message Sent");
+        logger.info("Message is Sent.");
     }
 
 
