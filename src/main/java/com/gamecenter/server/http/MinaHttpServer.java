@@ -1,5 +1,9 @@
 package com.gamecenter.server.http;
 
+import com.gamecenter.filter.http.HttpRequestDecoder;
+import com.gamecenter.filter.http.HttpServerProtocolCodecFactory;
+import com.gamecenter.handler.HttpHandler;
+import com.gamecenter.handler.ServerHandler;
 import com.gamecenter.server.Server;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -14,7 +18,25 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 public class MinaHttpServer implements Server {
     @Override
     public void start() {
+        int port = DEFAULT_PORT;
 
+        try {
+            // Create an acceptor
+            NioSocketAcceptor acceptor = new NioSocketAcceptor();
+
+            // Create a service configuration
+            acceptor.getFilterChain().addLast(
+                    "protocolFilter",
+                    new ProtocolCodecFilter(
+                            new HttpServerProtocolCodecFactory()));
+            acceptor.getFilterChain().addLast("logger", new LoggingFilter());
+            acceptor.setHandler(new ServerHandler());
+            acceptor.bind(new InetSocketAddress(port));
+
+            System.out.println("Server now listening on port " + port);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     /** Default HTTP port */
@@ -31,7 +53,7 @@ public class MinaHttpServer implements Server {
 
     public void setEncoding(String encoding) {
         this.encoding = encoding;
-        HttpRequestDecoder.defaultEncoding = encoding;
+//        HttpRequestDecoder.defaultEncoding = encoding;
 //        HttpResponseEncoder.defaultEncoding = encoding;
     }
 

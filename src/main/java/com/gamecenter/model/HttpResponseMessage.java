@@ -1,7 +1,8 @@
-package com.gamecenter.server.http;
+package com.gamecenter.model;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class HttpResponseMessage {
         // headers.put("Server", "HttpServer (" + Server.VERSION_STRING + ')');
         headers.put("Server", "HttpServer (" + "Mina 2.0" + ')');
         headers.put("Cache-Control", "private");
-        headers.put("Content-Type", "text/html; charset=iso-8859-1");
+//        headers.put("Content-Type", "json/html; charset=iso-8859-1");
         headers.put("Connection", "keep-alive");
         headers.put("Keep-Alive", "200");
         headers.put("Date", new SimpleDateFormat(
@@ -74,6 +75,40 @@ public class HttpResponseMessage {
 
     public int getBodyLength() {
         return body.size();
+    }
+
+    public String buildHTTPResponseMessage(){
+
+        if(responseCode == HttpURLConnection.HTTP_OK){
+
+            this.setContentType("application/json");
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("HTTP/1.1\r\n");
+
+            for(Map.Entry entry: headers.entrySet()){
+                sb.append(entry.getKey())
+                        .append(":")
+                        .append(entry.getValue())
+                        .append(";\r\n");
+            }
+            sb.append("\r\n\r\n");
+            sb.append(body.toString());
+//
+//            sb.append("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: ");
+//            sb.append(JadyerUtil.getBytes(httpResponseMessageBody, "UTF-8").length);
+//            sb.append("\r\n\r\n");
+//            sb.append(httpResponseMessageBody);
+            return sb.toString();
+        }
+        if(responseCode == HttpURLConnection.HTTP_BAD_REQUEST){
+            return "HTTP/1.1 400 Bad Request";
+        }
+        if(responseCode == HttpURLConnection.HTTP_INTERNAL_ERROR){
+            return "HTTP/1.1 500 Internal Server Error";
+        }
+        return "HTTP/1.1 501 Not Implemented";
     }
 
 }

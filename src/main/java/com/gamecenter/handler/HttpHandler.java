@@ -1,4 +1,7 @@
-package com.gamecenter.server.http;
+package com.gamecenter.handler;
+
+import com.gamecenter.model.HttpRequestMessage;
+import com.gamecenter.model.HttpResponseMessage;
 
 /**
  * HTTP请求的处理接口

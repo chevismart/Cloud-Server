@@ -1,4 +1,4 @@
-package com.gamecenter.server.http;
+package com.gamecenter.model;
 
 import java.util.Map;
 import java.util.Map.Entry;
