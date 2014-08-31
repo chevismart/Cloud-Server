@@ -1,8 +1,8 @@
 package com.gamecenter.handler;
 
-import com.gamecenter.model.Initialization;
 import com.gamecenter.model.HttpRequestMessage;
 import com.gamecenter.model.HttpResponseMessage;
+import com.gamecenter.model.Initialization;
 import org.apache.mina.core.future.IoFutureListener;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;

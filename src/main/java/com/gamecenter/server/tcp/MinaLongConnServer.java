@@ -1,5 +1,6 @@
 package com.gamecenter.server.tcp;
 
+import com.gamecenter.filter.tcp.CodecFactory;
 import com.gamecenter.handler.MinaTcpLongConnServerHandler;
 import com.gamecenter.server.Server;
 import org.apache.mina.core.service.IoAcceptor;
@@ -7,7 +8,6 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import com.gamecenter.filter.tcp.CodecFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

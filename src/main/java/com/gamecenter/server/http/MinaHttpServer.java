@@ -1,16 +1,15 @@
 package com.gamecenter.server.http;
 
-import com.gamecenter.filter.http.HttpRequestDecoder;
 import com.gamecenter.filter.http.HttpServerProtocolCodecFactory;
 import com.gamecenter.handler.HttpHandler;
 import com.gamecenter.handler.ServerHandler;
 import com.gamecenter.server.Server;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /**
  * Created by Boss on 2014/8/30.

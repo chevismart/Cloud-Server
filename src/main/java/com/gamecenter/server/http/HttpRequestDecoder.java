@@ -1,4 +1,12 @@
 package com.gamecenter.server.http;
+
+import com.gamecenter.model.HttpRequestMessage;
+import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+import org.apache.mina.filter.codec.demux.MessageDecoderAdapter;
+import org.apache.mina.filter.codec.demux.MessageDecoderResult;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -7,12 +15,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.mina.core.buffer.IoBuffer;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.ProtocolDecoderOutput;
-import org.apache.mina.filter.codec.demux.MessageDecoderAdapter;
-import org.apache.mina.filter.codec.demux.MessageDecoderResult;
 
 public class HttpRequestDecoder extends MessageDecoderAdapter {
     private static final byte[] CONTENT_LENGTH = new String("Content-Length:")
