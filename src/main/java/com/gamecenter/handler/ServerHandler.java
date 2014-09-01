@@ -3,6 +3,7 @@ package com.gamecenter.handler;
 import com.gamecenter.model.HttpRequestMessage;
 import com.gamecenter.model.HttpResponseMessage;
 import com.gamecenter.model.Initialization;
+import net.sf.json.JSONObject;
 import org.apache.mina.core.future.IoFutureListener;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
@@ -11,9 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class ServerHandler extends IoHandlerAdapter {
 
+    public static final String JSONP_CALLBACK = "jsonpCallback";
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private HttpHandler handler;
@@ -41,7 +44,7 @@ public class ServerHandler extends IoHandlerAdapter {
         HashMap<String, IoSession> map = Initialization.getInstance().getClientMap();
         logger.info("Session Map  = {}", map);
         if (null != map && !map.isEmpty()) {
-            for(String ip: map.keySet()){
+            for (String ip : map.keySet()) {
                 System.err.println(ip);
             }
         }
@@ -50,10 +53,20 @@ public class ServerHandler extends IoHandlerAdapter {
 //        HttpResponseMessage response = handler.handle(request);
 //        response.appendBody("chevis");
         HttpResponseMessage response = new HttpResponseMessage();
-        response.setContentType("text/plain");
+        response.setContentType("application/json");
 //        response.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
-        response.setResponseCode(200);
-        response.appendBody("CONNECTED");
+
+
+        Map<String,Object> jsonMap =  new HashMap<String,Object>();
+        jsonMap.put("ip",Initialization.getInstance().getClientMap().keySet());
+
+
+//        JSONArray jsonObject = JSONArray.fromObject(Initialization.getInstance().getClientMap().keySet());
+        JSONObject jsonObject = JSONObject.fromObject(jsonMap);
+//        response.appendBody(buildJsonResponse(request, "{\"name\":\"abc\"})"));
+        response.appendBody(buildJsonResponse(request, jsonObject.toString()));
+        System.err.println(buildJsonResponse(request, jsonObject.toString(1, 1)));
+
 
 //        msg.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
 //        byte[] b = new byte[ta.buffer.limit()];
@@ -80,21 +93,25 @@ public class ServerHandler extends IoHandlerAdapter {
         }
     }
 
+    private String buildJsonResponse(HttpRequestMessage request, String jsonStr) {
+        return request.getParameter(JSONP_CALLBACK) + "(" + jsonStr + ")";
+    }
+
     @Override
     public void messageSent(IoSession session, Object message) throws Exception {
         System.out.println("已回应给Client");
-        if(session != null){
+        if (session != null) {
             session.close(true);
         }
     }
 
     @Override
-    public void sessionIdle(IoSession session, IdleStatus status){
+    public void sessionIdle(IoSession session, IdleStatus status) {
         System.out.println("请求进入闲置状态....回路即将关闭....");
         session.close(true);
     }
     @Override
-    public void exceptionCaught(IoSession session, Throwable cause){
+    public void exceptionCaught(IoSession session, Throwable cause) {
         System.out.println("请求处理遇到异常....回路即将关闭....");
         cause.printStackTrace();
         session.close(true);

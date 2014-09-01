@@ -93,7 +93,7 @@ public class HttpResponseMessage {
                         .append(entry.getValue())
                         .append(";\r\n");
             }
-            sb.append("\r\n\r\n");
+            sb.append("\r\n");
             sb.append(body.toString());
 //
 //            sb.append("HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Length: ");

@@ -129,6 +129,12 @@
             <artifactId>logback-core</artifactId>
             <version>1.1.2</version>
         </dependency>
+        <dependency>
+            <groupId>net.sf.json-lib</groupId>
+            <artifactId>json-lib</artifactId>
+            <classifier>jdk15</classifier>
+            <version>2.2.3</version>
+        </dependency>
         <!--<dependency>-->
         <!--<groupId>org.apache.mina</groupId>-->
         <!--<artifactId>mina-integration-spring</artifactId>-->
