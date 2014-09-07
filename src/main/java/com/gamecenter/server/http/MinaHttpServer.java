@@ -1,8 +1,8 @@
 package com.gamecenter.server.http;
 
 import com.gamecenter.filter.http.HttpServerProtocolCodecFactory;
-import com.gamecenter.handler.HttpHandler;
-import com.gamecenter.handler.ServerHandler;
+import com.gamecenter.handler.HttpJsonHandler;
+import com.gamecenter.handler.HttpServerHandler;
 import com.gamecenter.server.Server;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.logging.LoggingFilter;
@@ -29,7 +29,7 @@ public class MinaHttpServer implements Server {
                     new ProtocolCodecFilter(
                             new HttpServerProtocolCodecFactory()));
             acceptor.getFilterChain().addLast("logger", new LoggingFilter());
-            acceptor.setHandler(new ServerHandler());
+            acceptor.setHandler(new HttpServerHandler());
             acceptor.bind(new InetSocketAddress(port));
 
             System.out.println("Server now listening on port " + port);
@@ -44,7 +44,7 @@ public class MinaHttpServer implements Server {
     private boolean isRunning;
 
     private String encoding;
-    private HttpHandler httpHandler;
+    private HttpJsonHandler httpJsonHandler;
 
     public String getEncoding() {
         return encoding;
@@ -56,12 +56,12 @@ public class MinaHttpServer implements Server {
 //        HttpResponseEncoder.defaultEncoding = encoding;
     }
 
-    public HttpHandler getHttpHandler() {
-        return httpHandler;
+    public HttpJsonHandler getHttpJsonHandler() {
+        return httpJsonHandler;
     }
 
-    public void setHttpHandler(HttpHandler httpHandler) {
-        this.httpHandler = httpHandler;
+    public void setHttpJsonHandler(HttpJsonHandler httpJsonHandler) {
+        this.httpJsonHandler = httpJsonHandler;
     }
 
     /**
@@ -80,8 +80,8 @@ public class MinaHttpServer implements Server {
                     new ProtocolCodecFilter(
                             new HttpServerProtocolCodecFactory()));
             // acceptor.getFilterChain().addLast("logger", new LoggingFilter());
-            ServerHandler handler = new ServerHandler();
-            handler.setHandler(httpHandler);
+            HttpServerHandler handler = new HttpServerHandler();
+            handler.setHandler(httpJsonHandler);
             acceptor.setHandler(handler);
             acceptor.bind(new InetSocketAddress(port));
             isRunning = true;
@@ -138,7 +138,7 @@ public class MinaHttpServer implements Server {
                     new ProtocolCodecFilter(
                             new HttpServerProtocolCodecFactory()));
             acceptor.getFilterChain().addLast("logger", new LoggingFilter());
-            acceptor.setHandler(new ServerHandler());
+            acceptor.setHandler(new HttpServerHandler());
             acceptor.bind(new InetSocketAddress(port));
 
             System.out.println("Server now listening on port " + port);

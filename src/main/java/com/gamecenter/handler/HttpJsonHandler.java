@@ -9,7 +9,7 @@ import com.gamecenter.model.HttpResponseMessage;
  * @author Ajita
  *
  */
-public interface HttpHandler {
+public interface HttpJsonHandler {
     /**
      * 自定义HTTP请求处理需要实现的方法
      * @param request 一个HTTP请求对象

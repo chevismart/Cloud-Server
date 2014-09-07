@@ -14,18 +14,18 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ServerHandler extends IoHandlerAdapter {
+public class HttpServerHandler extends IoHandlerAdapter {
 
     public static final String JSONP_CALLBACK = "jsonpCallback";
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private HttpHandler handler;
+    private HttpJsonHandler handler;
 
-    public HttpHandler getHandler() {
+    public HttpJsonHandler getHandler() {
         return handler;
     }
 
-    public void setHandler(HttpHandler handler) {
+    public void setHandler(HttpJsonHandler handler) {
         this.handler = handler;
     }
 
