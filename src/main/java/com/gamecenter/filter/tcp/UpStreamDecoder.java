@@ -29,83 +29,26 @@ public class UpStreamDecoder extends CumulativeProtocolDecoder {
 
     @Override
     protected boolean doDecode(IoSession ioSession, IoBuffer in, ProtocolDecoderOutput out) throws Exception {
-//
-//        int start = in.position();
-//
-//        // Now find the first CRLF in the buffer.
-//        byte previous = 0;
-//
-//        while (in.hasRemaining()) {
-//
-//            byte current = in.get();
-//
-//            if(current!=0x2c){
-//                int position = in.position();
-//                int limit = in.limit();
-//
-//            }
-//
-//        }
-//
-//        // Could not find CRLF in the buffer. Reset the initial
-//        // position to the one we recorded above.
-//        in.position(start);
-//
-//        return false;
-//    }
 
         logger.debug("doDecode starts!!!");
-        int minLength = Codec.TOTAL_HEADER_LENGTH;
 
-        logger.debug("Position before length checking = "+String.valueOf(in.position()));
-        if (in.hasRemaining() && in.remaining() < minLength) {
-            logger.debug("There is not enough data for decode.");
-            in.reset();
-            logger.debug("Position after length checking = "+String.valueOf(in.position()));
-            return false;
-        }
+        int headerLength = Codec.TOTAL_HEADER_LENGTH;
+
+        // If message is shorter than header's length, return false for waiting data.
+        if (!isHeaderLengthValid(in, headerLength)) return false;
+
         if (in.hasRemaining()) {
 
-            logger.debug("More than 1 byte here.");
+            in.mark(); //标记当前位置，以便reset
 
-            //这里很关键，网上很多代码都没有这句，是用来当拆包时候剩余长度小于4的时候的保护，不加就出错咯
+            MessageHeader header = createMsgHeader(in, headerLength);
 
-            in.mark();//标记当前位置，以便reset
-            logger.debug("Position 2 = "+String.valueOf(in.position()));
-
-
-            int msgLength = in.remaining();
-
-//        if (minLength > msgLength) {//如果消息内容不够，则重置，相当于不读取size
-//            System.out.println("package notenough  left=" + in.remaining() + " length=" + minLength);
-//            in.reset();
-//            return false;//接收新数据，以拼凑成完整数据
-//        } else {
-            System.out.println("Package =" + in.toString());
-
-            byte[] headerByte = new byte[minLength];
-
-            for (int i = 0; i < minLength; i++) {
-                headerByte[i] = in.get();
-            }
-            MessageHeader header = HeaderFilter.getMessageHeader(headerByte, MessageLoader.INSTANCE());
-
-            int bodyLength = header.getMsgBodyLength();
-            int remainingLength = bodyLength + Codec.TAILER_LENGTH;
-
-            if (null == header || remainingLength > in.remaining()) {
-                logger.warn("The package is too short to be decoded. Body plus tailer require length: {}, but is {}", bodyLength, in.remaining());
-                return false;
-            }
+            // If the body message is shorter than the length defined in header, return false for waiting data.
+            if (!isBodyLengthValid(in, header)) return false;
 
             in.reset();
-            int msgActualLength = Codec.TOTAL_HEADER_LENGTH + bodyLength + Codec.TAILER_LENGTH;
-            byte[] msgByte = new byte[msgActualLength];
-            int position = 0;
-            for (int i = 0; i < msgActualLength; i++) {
-                msgByte[i] = in.get();
-                position++;
-            }
+
+            byte[] msgByte = getMessageInByteArray(header,in);
 
             Map<MessageType, byte[]> resultMap = new HashMap<MessageType, byte[]>();
             resultMap.put(header.getMsgType(), msgByte);
@@ -126,14 +69,61 @@ public class UpStreamDecoder extends CumulativeProtocolDecoder {
 
             logger.info("Received message bytes = {}", ByteArrayUtil.toHexString(msgByte));
 
-            in.position(position);
-
+//            in.position(position);
 
 
             return true;//这里有两种情况1：没数据了，那么就结束当前调用，有数据就再次调用
         }
 //        in.flip();
         return false;
+    }
+
+    private byte[] getMessageInByteArray(MessageHeader header, IoBuffer in){
+        int totalMsgLength = Codec.TOTAL_HEADER_LENGTH + header.getMsgBodyLength() + Codec.TAILER_LENGTH;
+        byte[] msgByte = new byte[totalMsgLength];
+        int position = 0;
+        for (int i = 0; i < totalMsgLength; i++) {
+            msgByte[i] = in.get();
+            position++;
+        }
+
+        return msgByte;
+
+    }
+
+    private boolean isHeaderLengthValid(IoBuffer in, int headerLength) {
+        logger.debug("Position before length checking = " + String.valueOf(in.position()));
+        if (in.hasRemaining() && in.remaining() < headerLength) {
+            logger.debug("There is not enough data for decode.");
+            in.reset();
+            logger.debug("Position after length checking = " + String.valueOf(in.position()));
+            return false;
+        }
+        return true;
+    }
+
+    private MessageHeader createMsgHeader(IoBuffer in, int headerLength) {
+        byte[] headerByte = new byte[headerLength];
+
+        for (int i = 0; i < headerLength; i++) {
+            headerByte[i] = in.get();
+        }
+        MessageHeader header = HeaderFilter.getMessageHeader(headerByte, MessageLoader.INSTANCE());
+        return header;
+    }
+
+    private boolean isBodyLengthValid(IoBuffer in, MessageHeader header) {
+
+        int bodyLength = header.getMsgBodyLength();
+        int remainingLength = bodyLength + Codec.TAILER_LENGTH;
+
+        if (null == header || remainingLength > in.remaining()) {
+            logger.warn("The package is too short to be decoded. Body plus tailer require length: {}, but is {}",
+                    bodyLength, in.remaining());
+            return false;
+        }
+
+        return true;
     }
 
 

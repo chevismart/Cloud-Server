@@ -14,6 +14,15 @@ public class HttpResponseMessage {
     /** HTTP response codes */
     public static final int HTTP_STATUS_SUCCESS = 200;
 
+    @Override
+    public String toString() {
+        return "HttpResponseMessage{" +
+                "headers=" + headers +
+                ", body=" + body +
+                ", responseCode=" + responseCode +
+                '}';
+    }
+
     public static final int HTTP_STATUS_NOT_FOUND = 404;
 
     /** Map<String, String> */

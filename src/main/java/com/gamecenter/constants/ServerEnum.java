@@ -3,7 +3,7 @@ package com.gamecenter.constants;
 /**
  * Created by Boss on 2014/9/8.
  */
-public class SeverEnum {
+public class ServerEnum {
     public static class Json{
         public enum DataType{
             JSON("json"),

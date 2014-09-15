@@ -67,14 +67,14 @@ public class NIOServerTest {
     private void getAClient() throws IOException {
 //        Socket s = new Socket("192.168.11.2", 8002);
 
-//        Socket s = new Socket("alcock.gicp.net", 8002);
-        Socket s = new Socket("127.0.0.1", 8002);
+        Socket s = new Socket("alcock.gicp.net", 8002);
+//        Socket s = new Socket("127.0.0.1", 8002);
 
         InputStream inStram = s.getInputStream();
         OutputStream outStream = s.getOutputStream();
 
         PrintWriter out = new PrintWriter(outStream, true);
-        String str = new String(new byte[]{0x2a, 0x01, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x01, 0x10, 0x04, 0x00, 0x59, 0x00, 0x00, 0x00, 0x00, 0x00, 0x23}, "UTF-8");
+        String str = new String(new byte[]{0x2a, 0x01, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x0a, 0x11, 0x0a, 0x00, 0x59, 0x00, 0x00, 0x00,0x6c, (byte) 0xf0, 0x049, (byte) 0xb6, 0x4d, (byte) 0xf3, 0x00, 0x00, 0x23}, "UTF-8");
         System.err.println(str);
         System.err.println(str.length());
         System.err.println(ByteArrayUtil.toHexString(str.getBytes()));
