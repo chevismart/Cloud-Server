@@ -25,6 +25,8 @@ public class ClientListHandler implements HttpJsonHandler
 
         HashMap<String, IoSession> map = Initialization.getInstance().getClientMap();
 
+
+
         HashMap<String, String> clientMap = new HashMap<String, String>();
 
         logger.info("Session Map  = {}", map);

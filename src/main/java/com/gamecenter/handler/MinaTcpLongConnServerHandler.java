@@ -9,7 +9,6 @@ import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.gamecenter.serializer.constants.MessageType;
-import org.gamecenter.serializer.messages.Message;
 import org.gamecenter.serializer.messages.MessageHeader;
 import org.gamecenter.serializer.messages.downStream.PowerControlRequest;
 import org.gamecenter.serializer.messages.upStream.LoginRequest;
@@ -95,9 +94,9 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
                     authorizedSession.add(sessionId);
                     logger.info("Authorize devices {}", authorizedSession);
 //                    messageReceived(session, message);
-                    session.write(loginHandler.handle(messageMap.get(msgType)));
-                    }
-            } else if(authorizedSession.contains(sessionId)){
+                    session.write(loginHandler.handle(messageMap.get(msgType), session));
+                }
+            } else if (authorizedSession.contains(sessionId)) {
 
                 switch (msgType) {
                     case LoginRequest:
@@ -108,7 +107,7 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
                         break;
                 }
                 if (null != handler) {
-                    byte[] msg = handler.handle(messageMap.get(msgType));
+                    byte[] msg = handler.handle(messageMap.get(msgType), session);
                     logger.info("Message will be sent = {}", msg);
                     session.write(msg);
 
@@ -121,21 +120,21 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
                     PowerControlRequest pwdReq = new PowerControlRequest();
 
                     MessageHeader header = new MessageHeader();
-                    header.setMessageId(new byte[]{00,00,00,00});
+                    header.setMessageId(new byte[]{00, 00, 00, 00});
                     header.setMsgType(MessageType.PowerControlRequest);
-                    header.setMessageSN(new byte[]{00,00,00,00});
-                    header.setDeviceId(new byte[]{00,00,00,01});
+                    header.setMessageSN(new byte[]{00, 00, 00, 00});
+                    header.setDeviceId(new byte[]{00, 00, 00, 01});
                     pwdReq.setHeader(header);
 
                     pwdReq.setSwitcher("I");
 
-//                    session.write(pwdReq.build());
+                    session.write(pwdReq.build());
 
 
                 } else {
                     logger.error("There is no handler for message type {}", msgType);
                 }
-            }else{
+            } else {
                 logger.info("Not yet auth request!");
             }
         }

@@ -1,6 +1,7 @@
 package com.gamecenter.handler.tcp;
 
 import com.gamecenter.handler.TcpHandler;
+import org.apache.mina.core.session.IoSession;
 import org.gamecenter.serializer.constants.MessageType;
 import org.gamecenter.serializer.messages.MessageHeader;
 import org.gamecenter.serializer.messages.downStream.HeartbeatResponse;
@@ -13,7 +14,7 @@ import java.io.IOException;
  */
 public class HeartbeatHandler implements TcpHandler {
     @Override
-    public byte[] handle(byte[] bytes) throws IllegalAccessException, NoSuchFieldException, IOException {
+    public byte[] handle(byte[] bytes, IoSession session) throws IllegalAccessException, NoSuchFieldException, IOException {
 
         HeartbeatRequest request = new HeartbeatRequest();
         request.parse(bytes);
