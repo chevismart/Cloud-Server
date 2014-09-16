@@ -73,7 +73,7 @@ public class SessionUtilTest {
     public void getSessionMapByCenterIdInByteArray() throws Exception {
 
 
-        HashMap<String, IoSession> map = (HashMap<String, IoSession>) SessionUtil.getSessionByMacAddress(macInByte);
+        HashMap<String, IoSession> map = (HashMap<String, IoSession>) SessionUtil.getSessionByMacAddress(centerIdInByte);
         assertNotNull(map);
         assertEquals(mockSessionMap.size(), map.size());
         assertEquals(mockSessionMap.keySet(), map.keySet());
@@ -86,5 +86,17 @@ public class SessionUtilTest {
     public void createSessionKeyWithCenterIdAndMacAddressSuccessfully() throws Exception {
         String expectResult = centerIdInString + macInString;
         assertEquals(expectResult, SessionUtil.createSessionKey(centerIdInByte, macInByte));
+    }
+
+    @Test
+    public void getMacFromSessionKeyByCenterId() throws Exception {
+        String mac = "fffffffffff0";
+        String centerId = "00010203";
+        String sessionKey = SessionUtil.createSessionKey(ByteArrayUtil.hexStringToByteArray(centerId), ByteArrayUtil.hexStringToByteArray(mac));
+
+        String actualMac = SessionUtil.getMacFromSessionKey(sessionKey, centerId);
+
+        assertEquals(mac, actualMac);
+
     }
 }

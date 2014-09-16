@@ -32,7 +32,7 @@ public class MinaHttpServer implements Server {
             acceptor.setHandler(new HttpServerHandler());
             acceptor.bind(new InetSocketAddress(port));
 
-            System.out.println("Server now listening on port " + port);
+            System.out.println("Http Server now listening on port " + port);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

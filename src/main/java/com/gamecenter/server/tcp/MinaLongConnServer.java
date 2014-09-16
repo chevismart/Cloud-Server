@@ -35,7 +35,7 @@ public class MinaLongConnServer implements Server {
             acceptor.getSessionConfig().setReadBufferSize(2048);
             acceptor.bind(new InetSocketAddress(PORT));
             acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 60000);
-            System.out.println("Listening on port " + PORT);
+            System.out.println("Tcp Server Listening on port " + PORT);
         }catch (IOException e) {
             e.printStackTrace();
         }

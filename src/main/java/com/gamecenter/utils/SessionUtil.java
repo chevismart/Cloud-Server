@@ -20,6 +20,10 @@ public class SessionUtil {
         return ByteArrayUtil.toHexString(centerId).toLowerCase() + ByteArrayUtil.toHexString(macAdd).toLowerCase();
     }
 
+    public static String getMacFromSessionKey(String sessionKey, String key) {
+        return sessionKey.toLowerCase().replace(key.toLowerCase(), StringUtils.EMPTY);
+    }
+
     public static Map<String, IoSession> getSessionByCenterId(byte[] centerId) {
         return getSessionByFinder(centerIdFinder, centerId);
     }

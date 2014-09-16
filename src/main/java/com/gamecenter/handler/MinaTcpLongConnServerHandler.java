@@ -1,8 +1,7 @@
 package com.gamecenter.handler;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
-import com.gamecenter.handler.tcp.HeartbeatHandler;
-import com.gamecenter.handler.tcp.LoginHandler;
+import com.gamecenter.handler.tcp.*;
 import com.gamecenter.model.Initialization;
 import com.gamecenter.utils.SessionUtil;
 import org.apache.mina.core.service.IoHandler;
@@ -10,7 +9,7 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.gamecenter.serializer.constants.MessageType;
 import org.gamecenter.serializer.messages.MessageHeader;
-import org.gamecenter.serializer.messages.downStream.PowerControlRequest;
+import org.gamecenter.serializer.messages.downStream.*;
 import org.gamecenter.serializer.messages.upStream.LoginRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,14 +28,31 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
 
     private final Logger logger = (Logger) LoggerFactory.getLogger(getClass());
 
+
+    //temp
+    private String switcher = "I";
+    private int counterIndex = 0;
+
     List<String> authorizedSession;
     LoginHandler loginHandler;
     HeartbeatHandler heartbeatHandler;
+    PowerControlHandler powerControlHandler;
+    TopUpHandler topUpHandler;
+    CounterHandler counterHandler;
+    ResetCounterHandler resetCounterHandler;
+    RuntimeHandler runtimeHandler;
+    CounterStatusHandler counterStatusHandler;
 
     public MinaTcpLongConnServerHandler() {
         this.authorizedSession = new ArrayList<String>();
         loginHandler = new LoginHandler();
         heartbeatHandler = new HeartbeatHandler();
+        powerControlHandler = new PowerControlHandler();
+        topUpHandler = new TopUpHandler();
+        counterHandler = new CounterHandler();
+        resetCounterHandler = new ResetCounterHandler();
+        runtimeHandler = new RuntimeHandler();
+        counterStatusHandler = new CounterStatusHandler();
     }
 
     @Override
@@ -105,30 +121,37 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
                     case HeartbeatRequest:
                         handler = heartbeatHandler;
                         break;
+                    case PowerStatusResponse:
+                        handler = powerControlHandler;
+                        break;
+                    case TopUpResponse:
+                        handler = topUpHandler;
+                        break;
+                    case CounterResponse:
+                        handler = counterHandler;
+                        break;
+                    case ResetCounterResponse:
+                        handler = resetCounterHandler;
+                        break;
+                    case RuntimeResponse:
+                        handler = runtimeHandler;
+                        break;
+                    case CounterStatusResponse:
+                        handler = counterStatusHandler;
+                        break;
                 }
                 if (null != handler) {
                     byte[] msg = handler.handle(messageMap.get(msgType), session);
-                    logger.info("Message will be sent = {}", msg);
-                    session.write(msg);
 
-                    try {
-                        Thread.sleep(5000L);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    if (null != msg) {
+                        logger.info("Message will be sent = {}", ByteArrayUtil.toHexString(msg));
+                        session.write(msg);
+                    } else {
+                        logger.info("return is null, not sent back to client");
                     }
 
-                    PowerControlRequest pwdReq = new PowerControlRequest();
-
-                    MessageHeader header = new MessageHeader();
-                    header.setMessageId(new byte[]{00, 00, 00, 00});
-                    header.setMsgType(MessageType.PowerControlRequest);
-                    header.setMessageSN(new byte[]{00, 00, 00, 00});
-                    header.setDeviceId(new byte[]{00, 00, 00, 01});
-                    pwdReq.setHeader(header);
-
-                    pwdReq.setSwitcher("I");
-
-                    session.write(pwdReq.build());
+                    deviceControl(session);
+//                    powerControl(session);
 
 
                 } else {
@@ -140,36 +163,86 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
         }
 
 
-//        String expression = message.toString();
-//
-//
-//        if (clientMap == null || clientMap.size() == 0) {
-//
-//            session.write("error");
-//
-//        } else {
-//
-//            IoSession longConnSession = null;
-//
-//            Iterator<String> iterator = clientMap.keySet().iterator();
-//
-//            String key = "";
-//
-//            while (iterator.hasNext()) {
-//
-//                key = iterator.next();
-//
-//                longConnSession = clientMap.get(key);
-//
-//            }
-//
-//            logger.info("LongConnect Server Session ID :" + String.valueOf(longConnSession.getId()));
-//
-//            longConnSession.setAttribute("shortConnSession", session);
-//
-//            LoginResponse response = new LoginResponse();
-//            response.setHeader(request.getHeader());
+    }
 
+    private void deviceControl(IoSession session) {
+
+        MessageHeader header = new MessageHeader();
+        header.setMessageId(new byte[]{00, 00, 00, 00});
+        header.setMsgType(MessageType.PowerControlRequest);
+        header.setMessageSN(new byte[]{00, 00, 00, 00});
+        header.setDeviceId(new byte[]{00, 00, 00, 01});
+
+        counterIndex = counterIndex > 6 ? 0 : counterIndex;
+
+        byte[] req = null;
+        if (counterIndex == 0 || counterIndex == 2) {
+            CounterRequest counterRequest = new CounterRequest();
+            counterRequest.setHeader(header);
+            counterRequest.setReqCoin(true);
+            counterRequest.setReqPrize(false);
+            req = counterRequest.build();
+            logger.info("Requesting counter with {}", ByteArrayUtil.toHexString(req));
+        } else if (counterIndex == 1) {
+            TopUpRequest request = new TopUpRequest();
+            request.setHeader(header);
+            request.setReferenceId("ABCDEF0001");
+            request.setTopUpQuantity(1);
+            req = request.build();
+            logger.info("Top up coin with {}", ByteArrayUtil.toHexString(req));
+        } else if (counterIndex == 3) {
+            ResetCounterRequest resetCounterRequest = new ResetCounterRequest();
+            resetCounterRequest.setHeader(header);
+            resetCounterRequest.setResetCoin(true);
+            resetCounterRequest.setResetPrize(true);
+            req = resetCounterRequest.build();
+            logger.info("Reset counter request {}", ByteArrayUtil.toHexString(req));
+        } else if (counterIndex == 4) {
+            RuntimeRequest request = new RuntimeRequest();
+            request.setHeader(header);
+            req = request.build();
+            logger.info("Requesting device runtime.");
+        } else if (counterIndex == 5) {
+            CounterStatusRequest request =  new CounterStatusRequest();
+            request.setHeader(header);
+            req = request.build();
+            logger.info("Request counter status. {}", ByteArrayUtil.toHexString(req));
+        }else if (counterIndex == 6) {
+            switcher = "N".equals(switcher) ? "Y" : "N";
+            CounterSwitchRequest request =  new CounterSwitchRequest();
+            request.setHeader(header);
+            request.setSwitcher(switcher);
+            req = request.build();
+            logger.info("Switch counter status to {}. {}",switcher, ByteArrayUtil.toHexString(req));
+        }
+        counterIndex++;
+
+        if (null != req) session.write(req);
+    }
+
+    private void powerControl(IoSession session) {
+
+        switcher = "I".equals(switcher) ? "O" : "I";
+
+
+        MessageHeader header = new MessageHeader();
+        header.setMessageId(new byte[]{00, 00, 00, 00});
+        header.setMsgType(MessageType.PowerControlRequest);
+        header.setMessageSN(new byte[]{00, 00, 00, 00});
+        header.setDeviceId(new byte[]{00, 00, 00, 01});
+
+        if (counterIndex % 2 == 0) {
+            PowerStatusRequest pwdStatusReq = new PowerStatusRequest();
+            pwdStatusReq.setHeader(header);
+            logger.info("Query power status of the device. {}", ByteArrayUtil.toHexString(pwdStatusReq.build()));
+            session.write(pwdStatusReq.build());
+        } else {
+            PowerControlRequest pwdReq = new PowerControlRequest();
+            pwdReq.setHeader(header);
+            pwdReq.setSwitcher(switcher);
+            logger.info(switcher + " message {} is sent", ByteArrayUtil.toHexString(pwdReq.build()));
+            session.write(pwdReq.build());
+        }
 
     }
 
