@@ -67,8 +67,8 @@ public class NIOServerTest {
     private void getAClient() throws IOException {
 //        Socket s = new Socket("192.168.11.2", 8002);
 
-        Socket s = new Socket("alcock.gicp.net", 8002);
-//        Socket s = new Socket("127.0.0.1", 8002);
+//        Socket s = new Socket("alcock.gicp.net", 8002);
+        Socket s = new Socket("127.0.0.1", 8002);
 
         InputStream inStram = s.getInputStream();
         OutputStream outStream = s.getOutputStream();
