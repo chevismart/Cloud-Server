@@ -16,8 +16,8 @@ import static org.mockito.Mockito.mock;
 public class SessionUtilTest {
 
     byte[] macInByte = new byte[]{(byte) 0xf0, (byte) 0xf1, (byte) 0xf2, (byte) 0xf3, (byte) 0xf4, (byte) 0xff};
-    byte[] centerIdInByte = new byte[]{00, 01, 02, 03};
     String macInString = ByteArrayUtil.toHexString(macInByte);
+    byte[] centerIdInByte = new byte[]{00, 01, 02, 03};
     String centerIdInString = ByteArrayUtil.toHexString(centerIdInByte);
 
 
@@ -71,9 +71,7 @@ public class SessionUtilTest {
 
     @Test
     public void getSessionMapByCenterIdInByteArray() throws Exception {
-
-
-        HashMap<String, IoSession> map = (HashMap<String, IoSession>) SessionUtil.getSessionByMacAddress(centerIdInByte);
+        HashMap<String, IoSession> map = (HashMap<String, IoSession>) SessionUtil.getSessionByCenterId(centerIdInByte);
         assertNotNull(map);
         assertEquals(mockSessionMap.size(), map.size());
         assertEquals(mockSessionMap.keySet(), map.keySet());
