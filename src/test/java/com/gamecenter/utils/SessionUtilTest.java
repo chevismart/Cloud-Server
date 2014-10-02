@@ -1,6 +1,7 @@
 package com.gamecenter.utils;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
+import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.Initialization;
 import org.apache.mina.core.session.IoSession;
 import org.junit.Before;
@@ -12,6 +13,7 @@ import java.util.Map;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SessionUtilTest {
 
@@ -21,24 +23,26 @@ public class SessionUtilTest {
     String centerIdInString = ByteArrayUtil.toHexString(centerIdInByte);
 
 
-    IoSession mockSession = mock(IoSession.class);
-    HashMap<String, IoSession> mockSessionMap = new HashMap<String, IoSession>();
+    DeviceInfo mockDeviceInfo = mock(DeviceInfo.class);
+    IoSession mockIoSession = mock(IoSession.class);
+    HashMap<String, DeviceInfo> mockSessionMap = new HashMap<String, DeviceInfo>();
 
     @Before
     public void setUp() throws Exception {
-        HashMap<String, IoSession> sessionHashMap = Initialization.getInstance().getClientMap();
-        sessionHashMap.put(SessionUtil.createSessionKey(centerIdInByte, macInByte), mockSession);
-        mockSessionMap.put(SessionUtil.createSessionKey(centerIdInByte, macInByte), mockSession);
+        when(mockDeviceInfo.getSession()).thenReturn(mockIoSession);
+        HashMap<String, DeviceInfo> sessionHashMap = Initialization.getInstance().getClientMap();
+        sessionHashMap.put(SessionUtil.createSessionKey(centerIdInByte, macInByte), mockDeviceInfo);
+        mockSessionMap.put(SessionUtil.createSessionKey(centerIdInByte, macInByte), mockDeviceInfo);
     }
 
     @Test
     public void getSessionMapByMacAddressInString() throws Exception {
 
-        HashMap<String, IoSession> map = (HashMap<String, IoSession>) SessionUtil.getSessionByMacAddress(macInString);
+        HashMap<String, DeviceInfo> map = (HashMap<String, DeviceInfo>) SessionUtil.getDeviceInfoByMacAddress(macInString);
         assertNotNull(map);
         assertEquals(mockSessionMap.size(), map.size());
         assertEquals(mockSessionMap.keySet(), map.keySet());
-        for (Map.Entry<String, IoSession> entry : map.entrySet()) {
+        for (Map.Entry<String, DeviceInfo> entry : map.entrySet()) {
             assertEquals(mockSessionMap.get(entry.getKey()), entry.getValue());
         }
     }
@@ -46,36 +50,40 @@ public class SessionUtilTest {
     @Test
     public void getSessionMapByMacAddressInByteArray() throws Exception {
 
-        HashMap<String, IoSession> map = (HashMap<String, IoSession>) SessionUtil.getSessionByMacAddress(macInByte);
+        HashMap<String, DeviceInfo> map = (HashMap<String, DeviceInfo>) SessionUtil.getDeviceInfoByMacAddress(macInByte);
         assertNotNull(map);
         assertEquals(mockSessionMap.size(), map.size());
         assertEquals(mockSessionMap.keySet(), map.keySet());
-        for (Map.Entry<String, IoSession> entry : map.entrySet()) {
+        for (Map.Entry<String, DeviceInfo> entry : map.entrySet()) {
             assertEquals(mockSessionMap.get(entry.getKey()), entry.getValue());
         }
-
     }
 
+    @Test
+    public void getDeviceInfoByIoSession() throws Exception {
+        DeviceInfo deviceInfo = SessionUtil.getDeviceInfoByIoSession(mockIoSession);
+        assertEquals(mockDeviceInfo, deviceInfo);
+    }
 
     @Test
     public void getSessionMapByCenterIdInString() throws Exception {
 
-        HashMap<String, IoSession> map = (HashMap<String, IoSession>) SessionUtil.getSessionByCenterId(centerIdInString);
+        HashMap<String, DeviceInfo> map = (HashMap<String, DeviceInfo>) SessionUtil.getDeviceInfoByCenterId(centerIdInString);
         assertNotNull(map);
         assertEquals(mockSessionMap.size(), map.size());
         assertEquals(mockSessionMap.keySet(), map.keySet());
-        for (Map.Entry<String, IoSession> entry : map.entrySet()) {
+        for (Map.Entry<String, DeviceInfo> entry : map.entrySet()) {
             assertEquals(mockSessionMap.get(entry.getKey()), entry.getValue());
         }
     }
 
     @Test
     public void getSessionMapByCenterIdInByteArray() throws Exception {
-        HashMap<String, IoSession> map = (HashMap<String, IoSession>) SessionUtil.getSessionByCenterId(centerIdInByte);
+        HashMap<String, DeviceInfo> map = (HashMap<String, DeviceInfo>) SessionUtil.getDeviceInfoByCenterId(centerIdInByte);
         assertNotNull(map);
         assertEquals(mockSessionMap.size(), map.size());
         assertEquals(mockSessionMap.keySet(), map.keySet());
-        for (Map.Entry<String, IoSession> entry : map.entrySet()) {
+        for (Map.Entry<String, DeviceInfo> entry : map.entrySet()) {
             assertEquals(mockSessionMap.get(entry.getKey()), entry.getValue());
         }
     }

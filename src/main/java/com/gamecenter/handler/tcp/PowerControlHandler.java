@@ -2,7 +2,6 @@ package com.gamecenter.handler.tcp;
 
 import com.gamecenter.handler.TcpHandler;
 import org.apache.mina.core.session.IoSession;
-import org.gamecenter.serializer.messages.upStream.PowerControlResponse;
 import org.gamecenter.serializer.messages.upStream.PowerStatusResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

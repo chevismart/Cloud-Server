@@ -1,6 +1,7 @@
 package com.gamecenter.utils;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
+import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.Initialization;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.mina.core.session.IoSession;
@@ -16,6 +17,17 @@ public class SessionUtil {
     private static MacFinder macFinder = new MacFinder();
     private static CenterIdFinder centerIdFinder = new CenterIdFinder();
 
+    public static boolean removeSession(IoSession ioSession) {
+        Map<String, DeviceInfo> deviceInfoMap = Initialization.getInstance().getClientMap();
+        for (Map.Entry<String, DeviceInfo> deviceInfo : deviceInfoMap.entrySet()) {
+            if (deviceInfo.getValue().getSession().equals(ioSession)) {
+                deviceInfoMap.remove(deviceInfo);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static String createSessionKey(byte[] centerId, byte[] macAdd) {
         return ByteArrayUtil.toHexString(centerId).toLowerCase() + ByteArrayUtil.toHexString(macAdd).toLowerCase();
     }
@@ -24,29 +36,36 @@ public class SessionUtil {
         return sessionKey.toLowerCase().replace(key.toLowerCase(), StringUtils.EMPTY);
     }
 
-    public static Map<String, IoSession> getSessionByCenterId(byte[] centerId) {
+    public static DeviceInfo getDeviceInfoByIoSession(IoSession ioSession) {
+        for (DeviceInfo deviceInfo : Initialization.getInstance().getClientMap().values()) {
+            if (deviceInfo.getSession().equals(ioSession)) return deviceInfo;
+        }
+        return null;
+    }
+
+    public static Map<String, DeviceInfo> getDeviceInfoByCenterId(byte[] centerId) {
         return getSessionByFinder(centerIdFinder, centerId);
     }
 
-    public static Map<String, IoSession> getSessionByCenterId(String centerId) {
-        return getSessionByFinder(centerIdFinder, centerId);
+    public static Map<String, DeviceInfo> getDeviceInfoByCenterId(String centerId) {
+        return getDeviceInfoByFinder(centerIdFinder, centerId);
     }
 
-    public static Map<String, IoSession> getSessionByMacAddress(byte[] mac) {
+    public static Map<String, DeviceInfo> getDeviceInfoByMacAddress(byte[] mac) {
         return getSessionByFinder(macFinder, mac);
     }
 
-    public static Map<String, IoSession> getSessionByMacAddress(String mac) {
-        return getSessionByFinder(macFinder, mac);
+    public static Map<String, DeviceInfo> getDeviceInfoByMacAddress(String mac) {
+        return getDeviceInfoByFinder(macFinder, mac);
     }
 
-    protected static Map<String, IoSession> getSessionByFinder(SessionFinder sessionFinder, byte[] key) {
-        return getSessionByFinder(sessionFinder, ByteArrayUtil.toHexString(key));
+    protected static Map<String, DeviceInfo> getSessionByFinder(SessionFinder sessionFinder, byte[] key) {
+        return getDeviceInfoByFinder(sessionFinder, ByteArrayUtil.toHexString(key));
     }
 
-    protected static Map<String, IoSession> getSessionByFinder(SessionFinder sessionFinder, String key) {
-        HashMap<String, IoSession> sessionHashMap = Initialization.getInstance().getClientMap();
-        HashMap<String, IoSession> resultMap = new HashMap<String, IoSession>();
+    protected static Map<String, DeviceInfo> getDeviceInfoByFinder(SessionFinder sessionFinder, String key) {
+        HashMap<String, DeviceInfo> sessionHashMap = Initialization.getInstance().getClientMap();
+        HashMap<String, DeviceInfo> resultMap = new HashMap<String, DeviceInfo>();
         for (String sessionId : sessionHashMap.keySet()) {
             if (sessionFinder.find(sessionId, key)) {
                 resultMap.put(sessionId, sessionHashMap.get(sessionId));
@@ -55,6 +74,10 @@ public class SessionUtil {
         return resultMap;
     }
 
+
+    private static interface SessionFinder {
+        boolean find(String session, String key);
+    }
 
     private static class CenterIdFinder implements SessionFinder {
         @Override
@@ -70,9 +93,5 @@ public class SessionUtil {
             return StringUtils.isNotEmpty(session) && StringUtils.isNotEmpty(key) ?
                     session.toLowerCase().endsWith(key.toLowerCase()) : false;
         }
-    }
-
-    private static interface SessionFinder {
-        boolean find(String session, String key);
     }
 }

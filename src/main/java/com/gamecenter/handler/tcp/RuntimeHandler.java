@@ -1,6 +1,8 @@
 package com.gamecenter.handler.tcp;
 
 import com.gamecenter.handler.TcpHandler;
+import org.apache.mina.core.future.IoFuture;
+import org.apache.mina.core.future.IoFutureListener;
 import org.apache.mina.core.session.IoSession;
 import org.gamecenter.serializer.messages.upStream.RuntimeResponse;
 import org.slf4j.Logger;
@@ -11,7 +13,7 @@ import java.io.IOException;
 /**
  * Created by Boss on 2014/9/16.
  */
-public class RuntimeHandler implements TcpHandler {
+public class RuntimeHandler implements TcpHandler, IoFutureListener {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -24,5 +26,10 @@ public class RuntimeHandler implements TcpHandler {
         logger.info("The device runs {} mins.", response.getRuntime());
 
         return null;
+    }
+
+    @Override
+    public void operationComplete(IoFuture future) {
+
     }
 }

@@ -1,6 +1,7 @@
 package com.gamecenter.handler.tcp;
 
 import com.gamecenter.handler.TcpHandler;
+import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.Initialization;
 import com.gamecenter.utils.SessionUtil;
 import org.apache.mina.core.session.IoSession;
@@ -22,11 +23,16 @@ public class LoginHandler implements TcpHandler {
         LoginRequest request = new LoginRequest();
         request.parse(requestByte);
 
-        HashMap<String, IoSession> deviceSessionMap = Initialization.getInstance().getClientMap();
+        HashMap<String, DeviceInfo> deviceSessionMap = Initialization.getInstance().getClientMap();
 
         // Store the session with the new created session key
         String sessionKey = SessionUtil.createSessionKey(request.getCenterId(), request.getMac());
-        deviceSessionMap.put(sessionKey, session);
+
+        DeviceInfo deviceInfo = new DeviceInfo();
+        deviceInfo.setSession(session);
+        deviceInfo.setMessageHeader(request.getHeader());
+
+        deviceSessionMap.put(sessionKey, deviceInfo);
 
         LoginResponse response = new LoginResponse();
 

@@ -2,8 +2,10 @@ package com.gamecenter.handler;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.gamecenter.handler.tcp.*;
+import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.Initialization;
 import com.gamecenter.utils.SessionUtil;
+import org.apache.mina.core.future.IoFuture;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
@@ -27,12 +29,6 @@ import java.util.Map;
 public class MinaTcpLongConnServerHandler implements IoHandler {
 
     private final Logger logger = (Logger) LoggerFactory.getLogger(getClass());
-
-
-    //temp
-    private String switcher = "I";
-    private int counterIndex = 0;
-
     List<String> authorizedSession;
     LoginHandler loginHandler;
     HeartbeatHandler heartbeatHandler;
@@ -42,6 +38,9 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
     ResetCounterHandler resetCounterHandler;
     RuntimeHandler runtimeHandler;
     CounterStatusHandler counterStatusHandler;
+    //temp
+    private String switcher = "I";
+    private int counterIndex = 0;
 
     public MinaTcpLongConnServerHandler() {
         this.authorizedSession = new ArrayList<String>();
@@ -72,19 +71,21 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
 
         logger.info("接收来自客户端 :" + clientIp + "的连接.");
 
-        Initialization init = Initialization.getInstance();
+//        Initialization init = Initialization.getInstance();
+//
+//
+//        HashMap<String, DeviceInfo> clientMap = init.getClientMap();
+//
+//        clientMap.put(clientIp, session);
 
-
-        HashMap<String, IoSession> clientMap = init.getClientMap();
-
-        clientMap.put(clientIp, session);
-
-        logger.info(clientMap.toString());
+//        logger.info(clientMap.toString());
     }
 
     @Override
     public void sessionClosed(IoSession ioSession) throws Exception {
         logger.info("Session is closed.");
+        SessionUtil.removeSession(ioSession);
+        logger.info("{} is removed from system.", ioSession);
     }
 
 
@@ -145,7 +146,8 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
 
                     if (null != msg) {
                         logger.info("Message will be sent = {}", ByteArrayUtil.toHexString(msg));
-                        session.write(msg);
+                        IoFuture future = session.write(msg);
+//                        future.awaitUninterruptibly();
                     } else {
                         logger.info("return is null, not sent back to client");
                     }
@@ -203,17 +205,17 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
             req = request.build();
             logger.info("Requesting device runtime.");
         } else if (counterIndex == 5) {
-            CounterStatusRequest request =  new CounterStatusRequest();
+            CounterStatusRequest request = new CounterStatusRequest();
             request.setHeader(header);
             req = request.build();
             logger.info("Request counter status. {}", ByteArrayUtil.toHexString(req));
-        }else if (counterIndex == 6) {
+        } else if (counterIndex == 6) {
             switcher = "N".equals(switcher) ? "Y" : "N";
-            CounterSwitchRequest request =  new CounterSwitchRequest();
+            CounterSwitchRequest request = new CounterSwitchRequest();
             request.setHeader(header);
             request.setSwitcher(switcher);
             req = request.build();
-            logger.info("Switch counter status to {}. {}",switcher, ByteArrayUtil.toHexString(req));
+            logger.info("Switch counter status to {}. {}", switcher, ByteArrayUtil.toHexString(req));
         }
         counterIndex++;
 
@@ -259,8 +261,13 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
             isAuthroized = true;
             String sessionKey = SessionUtil.createSessionKey(request.getCenterId(), request.getMac());
             Initialization init = Initialization.getInstance();
-            HashMap<String, IoSession> clientMap = init.getClientMap();
-            clientMap.put(sessionKey, session);
+            HashMap<String, DeviceInfo> clientMap = init.getClientMap();
+
+            DeviceInfo deviceInfo = new DeviceInfo();
+            deviceInfo.setSession(session);
+            deviceInfo.setMessageHeader(request.getHeader());
+
+            clientMap.put(sessionKey, deviceInfo);
         }
 
         return isAuthroized;

@@ -2,11 +2,14 @@ package com.gamecenter.handler;
 
 import com.gamecenter.constants.ServerConstants;
 import com.gamecenter.constants.ServerEnum;
+import com.gamecenter.handler.http.ClientListHandler;
+import com.gamecenter.handler.http.CounterStatusHandler;
+import com.gamecenter.handler.tcp.CounterProxy;
+import com.gamecenter.handler.tcp.DeviceListProxy;
+import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.HttpRequestMessage;
 import com.gamecenter.model.HttpResponseMessage;
 import com.gamecenter.model.Initialization;
-import net.sf.json.JSONObject;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.mina.core.future.IoFutureListener;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
@@ -24,6 +27,16 @@ public class HttpServerHandler extends IoHandlerAdapter {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private HttpJsonHandler handler;
+    private Map<String, String> tokenMap;
+    private DeviceListProxy deviceListProxy;
+    private CounterProxy counterProxy;
+
+    public HttpServerHandler() {
+        tokenMap = new HashMap<String, String>();
+        tokenMap.put("59000000", "tokenStr");
+        deviceListProxy = new DeviceListProxy();
+        counterProxy = new CounterProxy();
+    }
 
     public HttpJsonHandler getHandler() {
         return handler;
@@ -31,13 +44,6 @@ public class HttpServerHandler extends IoHandlerAdapter {
 
     public void setHandler(HttpJsonHandler handler) {
         this.handler = handler;
-    }
-
-    private Map<String, String> tokenMap;
-
-    public HttpServerHandler() {
-        tokenMap = new HashMap<String, String>();
-        tokenMap.put("centerId", "tokenStr");
     }
 
     @Override
@@ -63,8 +69,8 @@ public class HttpServerHandler extends IoHandlerAdapter {
 
         HttpResponseMessage response = new HttpResponseMessage();
 
-        if(null != this.tokenMap && token.equals(tokenMap.get(centerId))){
-            HashMap<String, IoSession> map = Initialization.getInstance().getClientMap();
+        if (null != this.tokenMap && token.equals(tokenMap.get(centerId))) {
+            HashMap<String, DeviceInfo> map = Initialization.getInstance().getClientMap();
             logger.info("Session Map  = {}", map);
             if (null != map && !map.isEmpty()) {
                 for (String ip : map.keySet()) {
@@ -73,21 +79,26 @@ public class HttpServerHandler extends IoHandlerAdapter {
             }
 
 
-//        HttpResponseMessage response = handler.handle(request);
-//        response.appendBody("chevis");
+            switch (requestType) {
+                case CLIENT_LIST:
+                    handler = new ClientListHandler(deviceListProxy);
+                    break;
+                case COUNTER_STATUS:
+                    handler = new CounterStatusHandler(counterProxy);
+            }
+
+
             response.setContentType("application/json");
-//        response.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
 
+            if (handler != null) {
 
-            Map<String, Object> jsonMap = new HashMap<String, Object>();
-            jsonMap.put("ip", Initialization.getInstance().getClientMap().keySet());
+                response = handler.handle(request);
 
+                response.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
+            } else {
 
-//        JSONArray jsonObject = JSONArray.fromObject(Initialization.getInstance().getClientMap().keySet());
-            JSONObject jsonObject = JSONObject.fromObject(jsonMap);
-//        response.appendBody(buildJsonResponse(request, "{\"name\":\"abc\"})"));
-            response.appendBody(buildJsonResponse(request, jsonObject.toString()));
-            System.err.println(buildJsonResponse(request, jsonObject.toString(1, 1)));
+                response.setResponseCode(HttpResponseMessage.HTTP_STATUS_NOT_FOUND);
+            }
 
 
 //        msg.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
@@ -111,8 +122,6 @@ public class HttpServerHandler extends IoHandlerAdapter {
             System.err.println(response);
 
 
-        }else{
-            response.setResponseCode(HttpResponseMessage.HTTP_STATUS_NOT_FOUND);
         }
 
 
@@ -121,7 +130,7 @@ public class HttpServerHandler extends IoHandlerAdapter {
         }
     }
 
-    private String buildJsonResponse(HttpRequestMessage request, String jsonStr) {
+    protected String buildJsonResponse(HttpRequestMessage request, String jsonStr) {
         return request.getParameter(JSONP_CALLBACK) + "(" + jsonStr + ")";
     }
 

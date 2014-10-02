@@ -1,7 +1,5 @@
 package com.gamecenter.model;
 
-import org.apache.mina.core.session.IoSession;
-
 import java.util.HashMap;
 
 /**
@@ -9,12 +7,12 @@ import java.util.HashMap;
  */
 public class Initialization {
 
-    private static HashMap<String, IoSession> sessionHashMap;
+    private static HashMap<String, DeviceInfo> sessionHashMap;
 
     private static Initialization instence;
 
     public Initialization() {
-        sessionHashMap = new HashMap<String, IoSession>();
+        sessionHashMap = new HashMap<String, DeviceInfo>();
     }
 
     public static Initialization getInstance() {
@@ -25,7 +23,7 @@ public class Initialization {
         return instence;
     }
 
-    public HashMap<String,IoSession> getClientMap() {
+    public HashMap<String, DeviceInfo> getClientMap() {
         return sessionHashMap;
     }
 }
