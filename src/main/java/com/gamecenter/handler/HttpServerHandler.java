@@ -2,8 +2,7 @@ package com.gamecenter.handler;
 
 import com.gamecenter.constants.ServerConstants;
 import com.gamecenter.constants.ServerEnum;
-import com.gamecenter.handler.http.ClientListHandler;
-import com.gamecenter.handler.http.CounterStatusHandler;
+import com.gamecenter.handler.http.*;
 import com.gamecenter.handler.tcp.CounterProxy;
 import com.gamecenter.handler.tcp.DeviceListProxy;
 import com.gamecenter.model.DeviceInfo;
@@ -33,7 +32,7 @@ public class HttpServerHandler extends IoHandlerAdapter {
 
     public HttpServerHandler() {
         tokenMap = new HashMap<String, String>();
-        tokenMap.put("59000000", "tokenStr");
+        tokenMap.put("00000000", "tokenStr");
         deviceListProxy = new DeviceListProxy();
         counterProxy = new CounterProxy();
     }
@@ -85,6 +84,16 @@ public class HttpServerHandler extends IoHandlerAdapter {
                     break;
                 case COUNTER_STATUS:
                     handler = new CounterStatusHandler(counterProxy);
+                    break;
+                case COUNTER_QTY:
+                    handler = new CounterQtyHandler(counterProxy);
+                    break;
+                case COUNTER_RESET:
+                    handler = new CounterResetHandler(counterProxy);
+                    break;
+                case TOP_UP:
+                    handler = new TopUpHandler(counterProxy);
+                    break;
             }
 
 
@@ -96,7 +105,7 @@ public class HttpServerHandler extends IoHandlerAdapter {
 
                 response.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
             } else {
-
+                logger.error("There is no handler for http request of {}", requestType);
                 response.setResponseCode(HttpResponseMessage.HTTP_STATUS_NOT_FOUND);
             }
 
@@ -122,6 +131,8 @@ public class HttpServerHandler extends IoHandlerAdapter {
             System.err.println(response);
 
 
+        } else {
+            logger.warn("Invalid token({}) for centerId {}", token, centerId);
         }
 
 

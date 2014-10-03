@@ -26,7 +26,6 @@ public class CounterStatusHandler implements TcpHandler {
         CounterStatusResponse response = new CounterStatusResponse();
         response.parse(resp);
 
-//        HashMap<String, DeviceInfo> deviceSessionMap = Initialization.getInstance().getClientMap();
         DeviceInfo deviceInfo = SessionUtil.getDeviceInfoByIoSession(session);
         Counter counter = deviceInfo.getCounter();
 
@@ -35,7 +34,7 @@ public class CounterStatusHandler implements TcpHandler {
         counter.setCoinOn(isOn);
         counter.setPrizeOn(isOn);
         counter.setLastStatusTime(new Date());
-
+        deviceInfo.setMessageHeader(response.getHeader());
         return null;
     }
 }

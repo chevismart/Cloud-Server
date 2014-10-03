@@ -4,6 +4,9 @@ import org.apache.mina.core.session.IoSession;
 import org.gamecenter.serializer.messages.MessageHeader;
 import org.gamecenter.serializer.utils.ByteUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by Chevis on 14-9-19.
  */
@@ -12,9 +15,36 @@ public class DeviceInfo {
     private IoSession session;
     private MessageHeader messageHeader;
     private Counter counter;
+    private Map<String, TopUp> topUpHistory;
 
     public DeviceInfo() {
+        this.topUpHistory = new HashMap<String, TopUp>();
         this.counter = new Counter();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DeviceInfo that = (DeviceInfo) o;
+
+        if (counter != null ? !counter.equals(that.counter) : that.counter != null) return false;
+        if (messageHeader != null ? !messageHeader.equals(that.messageHeader) : that.messageHeader != null)
+            return false;
+        if (session != null ? !session.equals(that.session) : that.session != null) return false;
+        if (topUpHistory != null ? !topUpHistory.equals(that.topUpHistory) : that.topUpHistory != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = session != null ? session.hashCode() : 0;
+        result = 31 * result + (messageHeader != null ? messageHeader.hashCode() : 0);
+        result = 31 * result + (counter != null ? counter.hashCode() : 0);
+        result = 31 * result + (topUpHistory != null ? topUpHistory.hashCode() : 0);
+        return result;
     }
 
     @Override
@@ -23,7 +53,16 @@ public class DeviceInfo {
                 "session=" + session +
                 ", messageHeader=" + messageHeader +
                 ", counter=" + counter +
+                ", topUpHistory=" + topUpHistory +
                 '}';
+    }
+
+    public Map<String, TopUp> getTopUpHistory() {
+        return topUpHistory;
+    }
+
+    public void setTopUpHistory(Map<String, TopUp> topUpHistory) {
+        this.topUpHistory = topUpHistory;
     }
 
     public Counter getCounter() {
@@ -58,26 +97,4 @@ public class DeviceInfo {
         return messageHeader;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        DeviceInfo that = (DeviceInfo) o;
-
-        if (counter != null ? !counter.equals(that.counter) : that.counter != null) return false;
-        if (messageHeader != null ? !messageHeader.equals(that.messageHeader) : that.messageHeader != null)
-            return false;
-        if (session != null ? !session.equals(that.session) : that.session != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = session != null ? session.hashCode() : 0;
-        result = 31 * result + (messageHeader != null ? messageHeader.hashCode() : 0);
-        result = 31 * result + (counter != null ? counter.hashCode() : 0);
-        return result;
-    }
 }

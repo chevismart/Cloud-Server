@@ -9,6 +9,7 @@ import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.HttpRequestMessage;
 import com.gamecenter.model.HttpResponseMessage;
 import com.gamecenter.utils.JsonUtil;
+import com.gamecenter.utils.MessageUtil;
 import com.gamecenter.utils.SessionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,14 +19,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Chevis on 14-10-2.
+ * Created by Chevis on 14-10-3.
  */
-public class CounterStatusHandler extends HttpServerHandler implements HttpJsonHandler {
+public class CounterQtyHandler extends HttpServerHandler implements HttpJsonHandler {
 
     private final CounterProxy counterProxy;
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public CounterStatusHandler(CounterProxy counterProxy) {
+    public CounterQtyHandler(CounterProxy counterProxy) {
         this.counterProxy = counterProxy;
     }
 
@@ -40,26 +41,30 @@ public class CounterStatusHandler extends HttpServerHandler implements HttpJsonH
 
             DeviceInfo deviceInfo = deviceInfoMap.values().iterator().next();
 
-            Date lastQuery = (Date) deviceInfo.getCounter().getLastStatusTime().clone();
+            String queryCoin = request.getParameter(ServerConstants.JsonConst.COIN_QTY);
+            String queryPrize = request.getParameter(ServerConstants.JsonConst.PRIZE_QTY);
+            boolean isQueryCoin = MessageUtil.isQuery(queryCoin);
+            boolean isQueryPrize = MessageUtil.isQuery(queryPrize);
 
-            counterProxy.refreshCounterStatus(deviceInfo);
+            counterProxy.refreshCounterQty(isQueryCoin, isQueryPrize, deviceInfo);
 
+            Date lastQuery = deviceInfo.getCounter().getLastQtyTime();
 
-            logger.debug("Wait for counter status response at {}", new Date());
+            logger.debug("Wait for counter quantity response at {}", new Date());
 
-            while (!lastQuery.before(deviceInfo.getCounter().getLastStatusTime())) {
+            while (!lastQuery.before(deviceInfo.getCounter().getLastQtyTime())) {
 //
 //                // TODO: To be fixed here and add timeout
 //                deviceInfo.getCounter().setLastStatusTime(new Date());
 //                deviceInfo.getCounter().setCoinOn(true);
             }
 
-            logger.debug("Get counter status response at {}", deviceInfo.getCounter().getLastStatusTime());
+            logger.debug("Get counter quantity response at {}", deviceInfo.getCounter().getLastStatusTime());
 
             Map<String, String> respMap = new HashMap<String, String>();
-            respMap.put(ServerConstants.JsonConst.COIN_STATUS, String.valueOf(deviceInfo.getCounter().isCoinOn()));
-            respMap.put(ServerConstants.JsonConst.PRIZE_STATUS, String.valueOf(deviceInfo.getCounter().isPrizeOn()));
-            respMap.put(ServerConstants.JsonConst.COUNTER_STATUS_TIMESTAMP, deviceInfo.getCounter().getLastStatusTime().toString());
+            respMap.put(ServerConstants.JsonConst.COIN_QTY, String.valueOf(deviceInfo.getCounter().getCoinQty()));
+            respMap.put(ServerConstants.JsonConst.PRIZE_QTY, String.valueOf(deviceInfo.getCounter().getPrizeQty()));
+            respMap.put(ServerConstants.JsonConst.COUNTER_QTY_TIMESTAMP, deviceInfo.getCounter().getLastQtyTime().toString());
 
             response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
 
@@ -67,6 +72,7 @@ public class CounterStatusHandler extends HttpServerHandler implements HttpJsonH
             logger.warn("Device {} not found!", mac);
             response = null;
         }
+
         return response;
     }
 }

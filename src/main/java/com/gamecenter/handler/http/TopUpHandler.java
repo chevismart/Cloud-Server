@@ -8,6 +8,7 @@ import com.gamecenter.handler.tcp.CounterProxy;
 import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.HttpRequestMessage;
 import com.gamecenter.model.HttpResponseMessage;
+import com.gamecenter.model.TopUp;
 import com.gamecenter.utils.JsonUtil;
 import com.gamecenter.utils.SessionUtil;
 import org.slf4j.Logger;
@@ -18,14 +19,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Chevis on 14-10-2.
+ * Created by Chevis on 14-10-3.
  */
-public class CounterStatusHandler extends HttpServerHandler implements HttpJsonHandler {
+public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
 
     private final CounterProxy counterProxy;
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public CounterStatusHandler(CounterProxy counterProxy) {
+    public TopUpHandler(CounterProxy counterProxy) {
         this.counterProxy = counterProxy;
     }
 
@@ -40,26 +41,33 @@ public class CounterStatusHandler extends HttpServerHandler implements HttpJsonH
 
             DeviceInfo deviceInfo = deviceInfoMap.values().iterator().next();
 
-            Date lastQuery = (Date) deviceInfo.getCounter().getLastStatusTime().clone();
+            String refId = request.getParameter(ServerConstants.JsonConst.TOP_UP_REFERENCE_ID);
+            int coinQty = Integer.valueOf(request.getParameter(ServerConstants.JsonConst.TOP_UP_COIN_QTY));
 
-            counterProxy.refreshCounterStatus(deviceInfo);
+            Date now = new Date();
 
+            counterProxy.topUpCoins(deviceInfo, coinQty, refId, now);
 
-            logger.debug("Wait for counter status response at {}", new Date());
+            logger.info("Top up time is {}", now);
 
-            while (!lastQuery.before(deviceInfo.getCounter().getLastStatusTime())) {
-//
-//                // TODO: To be fixed here and add timeout
-//                deviceInfo.getCounter().setLastStatusTime(new Date());
-//                deviceInfo.getCounter().setCoinOn(true);
+            TopUp topUp = deviceInfo.getTopUpHistory().get(refId);
+
+            boolean topUpResult = false;
+
+            if (null != topUp) {
+
+                while (!now.before(topUp.getUpdateTime())) {
+                    //TODO: handle timeout here
+                }
+
+                topUpResult = topUp.isTopUpResult();
+
             }
 
-            logger.debug("Get counter status response at {}", deviceInfo.getCounter().getLastStatusTime());
-
             Map<String, String> respMap = new HashMap<String, String>();
-            respMap.put(ServerConstants.JsonConst.COIN_STATUS, String.valueOf(deviceInfo.getCounter().isCoinOn()));
-            respMap.put(ServerConstants.JsonConst.PRIZE_STATUS, String.valueOf(deviceInfo.getCounter().isPrizeOn()));
-            respMap.put(ServerConstants.JsonConst.COUNTER_STATUS_TIMESTAMP, deviceInfo.getCounter().getLastStatusTime().toString());
+            respMap.put(ServerConstants.JsonConst.TOP_UP_RESULT, String.valueOf(topUpResult));
+            respMap.put(ServerConstants.JsonConst.TOP_UP_REFERENCE_ID, topUp.getReferenceId());
+            respMap.put(ServerConstants.JsonConst.TOP_UP_RESULT_TIMESTAMP, topUp.getUpdateTime().toString());
 
             response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
 
@@ -67,6 +75,7 @@ public class CounterStatusHandler extends HttpServerHandler implements HttpJsonH
             logger.warn("Device {} not found!", mac);
             response = null;
         }
+
         return response;
     }
 }

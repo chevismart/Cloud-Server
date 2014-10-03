@@ -35,7 +35,7 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
     PowerControlHandler powerControlHandler;
     TopUpHandler topUpHandler;
     CounterHandler counterHandler;
-    ResetCounterHandler resetCounterHandler;
+    CounterResetHandler counterResetHandler;
     RuntimeHandler runtimeHandler;
     CounterStatusHandler counterStatusHandler;
     //temp
@@ -49,7 +49,7 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
         powerControlHandler = new PowerControlHandler();
         topUpHandler = new TopUpHandler();
         counterHandler = new CounterHandler();
-        resetCounterHandler = new ResetCounterHandler();
+        counterResetHandler = new CounterResetHandler();
         runtimeHandler = new RuntimeHandler();
         counterStatusHandler = new CounterStatusHandler();
     }
@@ -132,7 +132,7 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
                         handler = counterHandler;
                         break;
                     case ResetCounterResponse:
-                        handler = resetCounterHandler;
+                        handler = counterResetHandler;
                         break;
                     case RuntimeResponse:
                         handler = runtimeHandler;
@@ -152,7 +152,7 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
                         logger.info("return is null, not sent back to client");
                     }
 
-                    deviceControl(session);
+//                    deviceControl(session);
 //                    powerControl(session);
 
 
