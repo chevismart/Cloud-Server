@@ -16,10 +16,12 @@ public class DeviceInfo {
     private MessageHeader messageHeader;
     private Counter counter;
     private Map<String, TopUp> topUpHistory;
+    private Power power;
 
     public DeviceInfo() {
         this.topUpHistory = new HashMap<String, TopUp>();
         this.counter = new Counter();
+        this.power = new Power();
     }
 
     @Override
@@ -32,6 +34,7 @@ public class DeviceInfo {
         if (counter != null ? !counter.equals(that.counter) : that.counter != null) return false;
         if (messageHeader != null ? !messageHeader.equals(that.messageHeader) : that.messageHeader != null)
             return false;
+        if (power != null ? !power.equals(that.power) : that.power != null) return false;
         if (session != null ? !session.equals(that.session) : that.session != null) return false;
         if (topUpHistory != null ? !topUpHistory.equals(that.topUpHistory) : that.topUpHistory != null) return false;
 
@@ -44,6 +47,7 @@ public class DeviceInfo {
         result = 31 * result + (messageHeader != null ? messageHeader.hashCode() : 0);
         result = 31 * result + (counter != null ? counter.hashCode() : 0);
         result = 31 * result + (topUpHistory != null ? topUpHistory.hashCode() : 0);
+        result = 31 * result + (power != null ? power.hashCode() : 0);
         return result;
     }
 
@@ -54,7 +58,16 @@ public class DeviceInfo {
                 ", messageHeader=" + messageHeader +
                 ", counter=" + counter +
                 ", topUpHistory=" + topUpHistory +
+                ", powerControl=" + power +
                 '}';
+    }
+
+    public Power getPower() {
+        return power;
+    }
+
+    public void setPower(Power power) {
+        this.power = power;
     }
 
     public Map<String, TopUp> getTopUpHistory() {

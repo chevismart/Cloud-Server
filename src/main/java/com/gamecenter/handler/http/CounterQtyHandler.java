@@ -43,8 +43,8 @@ public class CounterQtyHandler extends HttpServerHandler implements HttpJsonHand
 
             String queryCoin = request.getParameter(ServerConstants.JsonConst.COIN_QTY);
             String queryPrize = request.getParameter(ServerConstants.JsonConst.PRIZE_QTY);
-            boolean isQueryCoin = MessageUtil.isQuery(queryCoin);
-            boolean isQueryPrize = MessageUtil.isQuery(queryPrize);
+            boolean isQueryCoin = MessageUtil.isTrue(queryCoin);
+            boolean isQueryPrize = MessageUtil.isTrue(queryPrize);
 
             counterProxy.refreshCounterQty(isQueryCoin, isQueryPrize, deviceInfo);
 

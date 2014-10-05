@@ -45,8 +45,8 @@ public class CounterResetHandler extends HttpServerHandler implements HttpJsonHa
 
             String resetCoin = request.getParameter(ServerConstants.JsonConst.COIN_RESET);
             String resetPrize = request.getParameter(ServerConstants.JsonConst.PRIZE_RESET);
-            boolean isResetCoin = MessageUtil.isQuery(resetCoin);
-            boolean isResetPrize = MessageUtil.isQuery(resetPrize);
+            boolean isResetCoin = MessageUtil.isTrue(resetCoin);
+            boolean isResetPrize = MessageUtil.isTrue(resetPrize);
 
             counterProxy.resetCounter(isResetCoin, isResetPrize, deviceInfo);
 

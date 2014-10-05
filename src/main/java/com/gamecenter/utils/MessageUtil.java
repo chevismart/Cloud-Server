@@ -12,6 +12,10 @@ public class MessageUtil {
         return StringUtils.isNotEmpty(statusStr) && statusStr.equalsIgnoreCase(ServerConstants.STATUS_ON) ? true : false;
     }
 
+    public static boolean isTrue(String value) {
+        return StringUtils.isNotEmpty(value) ? Boolean.valueOf(value) : false;
+    }
+
     public static boolean isQuery(String value) {
         return StringUtils.isNotEmpty(value) && value.equalsIgnoreCase(ServerConstants.YES) ? true : false;
     }
@@ -22,5 +26,13 @@ public class MessageUtil {
 
     public static String isEnable(boolean bool) {
         return bool ? ServerConstants.ENABLED : ServerConstants.DISABLED;
+    }
+
+    public static boolean isPowerOn(String value) {
+        return StringUtils.isNotEmpty(value) && value.equalsIgnoreCase(ServerConstants.POWER_ON) ? true : false;
+    }
+
+    public static String isPowerOn(boolean isPowerOn) {
+        return isPowerOn ? ServerConstants.POWER_ON : ServerConstants.POWER_OFF;
     }
 }

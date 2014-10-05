@@ -5,6 +5,7 @@ import com.gamecenter.constants.ServerEnum;
 import com.gamecenter.handler.http.*;
 import com.gamecenter.handler.tcp.CounterProxy;
 import com.gamecenter.handler.tcp.DeviceListProxy;
+import com.gamecenter.handler.tcp.PowerProxy;
 import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.HttpRequestMessage;
 import com.gamecenter.model.HttpResponseMessage;
@@ -29,12 +30,15 @@ public class HttpServerHandler extends IoHandlerAdapter {
     private Map<String, String> tokenMap;
     private DeviceListProxy deviceListProxy;
     private CounterProxy counterProxy;
+    private PowerProxy powerProxy;
 
     public HttpServerHandler() {
         tokenMap = new HashMap<String, String>();
         tokenMap.put("00000000", "tokenStr");
         deviceListProxy = new DeviceListProxy();
         counterProxy = new CounterProxy();
+        powerProxy = new PowerProxy();
+
     }
 
     public HttpJsonHandler getHandler() {
@@ -93,6 +97,12 @@ public class HttpServerHandler extends IoHandlerAdapter {
                     break;
                 case TOP_UP:
                     handler = new TopUpHandler(counterProxy);
+                    break;
+                case POWER_STATUS:
+                    handler = new PowerStatusHandler(powerProxy);
+                    break;
+                case POWER_CONTROL:
+                    handler = new PowerControlHandler(powerProxy);
                     break;
             }
 

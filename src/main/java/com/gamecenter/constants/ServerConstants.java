@@ -9,8 +9,10 @@ public class ServerConstants {
     public static final String YES = "Y";
     public static final String ENABLED = "Y";
     public static final String DISABLED = "N";
+    public static final String POWER_ON = "I";
+    public static final String POWER_OFF = "O";
 
-    public static class JsonConst{
+    public static class JsonConst {
         public final static String TOKEN = "TOKEN";
         public final static String CENTER_ID = "CENTER_ID";
         public final static String REQUEST_TYPE = "REQ_TYPE";
@@ -30,9 +32,9 @@ public class ServerConstants {
         public final static String TOP_UP_COIN_QTY = "TOP_UP_COIN_QTY";
         public final static String TOP_UP_RESULT = "TOP_UP_RESULT";
         public final static String TOP_UP_RESULT_TIMESTAMP = "TOP_UP_RESULT_TIMESTAMP";
-
-
-
+        public final static String POWER_STATUS = "POWER_STATUS";
+        public final static String POWER_STATUS_UPDATE_TIME = "POWER_STATUS_UPDATE_TIME";
+        public final static String POWER_SWITCHER = "POWER_SWITCHER";
 
 
     }
