@@ -12,10 +12,7 @@ import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;
 import org.gamecenter.serializer.constants.MessageType;
 import org.gamecenter.serializer.messages.MessageHeader;
-import org.gamecenter.serializer.messages.downStream.CounterRequest;
-import org.gamecenter.serializer.messages.downStream.CounterStatusRequest;
-import org.gamecenter.serializer.messages.downStream.ResetCounterRequest;
-import org.gamecenter.serializer.messages.downStream.TopUpRequest;
+import org.gamecenter.serializer.messages.downStream.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +24,18 @@ import java.util.Date;
 public class CounterProxy extends DeviceProxy implements HttpJsonHandler {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public void switchCounter(DeviceInfo deviceInfo, boolean isPowerOn) {
+        CounterSwitchRequest request = new CounterSwitchRequest();
+        MessageHeader header = deviceInfo.getHeaderWithMessageNumIncreasment();
+        header.setMsgType(MessageType.CounterSwitchRequest);
+        request.setHeader(header);
+
+        request.setSwitcher(MessageUtil.isEnable(isPowerOn));
+
+        execute(request.build(), deviceInfo.getSession());
+        logger.info("Message({}) sent: {}", ByteArrayUtil.toHexString(request.build()), request.toString());
+    }
 
     public void topUpCoins(DeviceInfo deviceInfo, int coinQty, String referenceId, Date time) {
         TopUpRequest request = new TopUpRequest();

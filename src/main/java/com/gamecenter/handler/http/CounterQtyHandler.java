@@ -50,24 +50,14 @@ public class CounterQtyHandler extends HttpServerHandler implements HttpJsonHand
 
             Date lastQuery = deviceInfo.getCounter().getLastQtyTime();
 
-            logger.debug("Wait for counter quantity response at {}", new Date());
+            if (MessageUtil.waitForResponse(lastQuery, deviceInfo.getCounter().getLastQtyTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
+                Map<String, String> respMap = new HashMap<String, String>();
+                respMap.put(ServerConstants.JsonConst.COIN_QTY, String.valueOf(deviceInfo.getCounter().getCoinQty()));
+                respMap.put(ServerConstants.JsonConst.PRIZE_QTY, String.valueOf(deviceInfo.getCounter().getPrizeQty()));
+                respMap.put(ServerConstants.JsonConst.COUNTER_QTY_TIMESTAMP, deviceInfo.getCounter().getLastQtyTime().toString());
 
-            while (!lastQuery.before(deviceInfo.getCounter().getLastQtyTime())) {
-//
-//                // TODO: To be fixed here and add timeout
-//                deviceInfo.getCounter().setLastStatusTime(new Date());
-//                deviceInfo.getCounter().setCoinOn(true);
+                response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
             }
-
-            logger.debug("Get counter quantity response at {}", deviceInfo.getCounter().getLastStatusTime());
-
-            Map<String, String> respMap = new HashMap<String, String>();
-            respMap.put(ServerConstants.JsonConst.COIN_QTY, String.valueOf(deviceInfo.getCounter().getCoinQty()));
-            respMap.put(ServerConstants.JsonConst.PRIZE_QTY, String.valueOf(deviceInfo.getCounter().getPrizeQty()));
-            respMap.put(ServerConstants.JsonConst.COUNTER_QTY_TIMESTAMP, deviceInfo.getCounter().getLastQtyTime().toString());
-
-            response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
-
         } else {
             logger.warn("Device {} not found!", mac);
             response = null;

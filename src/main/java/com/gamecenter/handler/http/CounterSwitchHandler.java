@@ -19,33 +19,36 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Chevis on 14-10-2.
+ * Created by Chevis on 2014/10/5.
  */
-public class CounterStatusHandler extends HttpServerHandler implements HttpJsonHandler {
+public class CounterSwitchHandler extends HttpServerHandler implements HttpJsonHandler {
 
     private final CounterProxy counterProxy;
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public CounterStatusHandler(CounterProxy counterProxy) {
+    public CounterSwitchHandler(CounterProxy counterProxy) {
         this.counterProxy = counterProxy;
     }
 
     @Override
     public HttpResponseMessage handle(HttpRequestMessage request) {
-
         HttpResponseMessage response = new HttpResponseMessage();
 
         String mac = request.getParameter(ServerConstants.JsonConst.MAC);
         Map<String, DeviceInfo> deviceInfoMap = SessionUtil.getDeviceInfoByMacAddress(ByteArrayUtil.hexStringToByteArray(mac));
         if (null != deviceInfoMap && !deviceInfoMap.isEmpty()) {
-
             DeviceInfo deviceInfo = deviceInfoMap.values().iterator().next();
+
+            String switcher = request.getParameter(ServerConstants.JsonConst.COUNTER_SWITCH);
 
             Date lastQuery = (Date) deviceInfo.getCounter().getLastStatusTime().clone();
 
-            counterProxy.refreshCounterStatus(deviceInfo);
+            counterProxy.switchCounter(deviceInfo, MessageUtil.isTrue(switcher));
+
+            logger.debug("Wait for counter status response at {}", new Date());
 
             if (MessageUtil.waitForResponse(lastQuery, deviceInfo.getCounter().getLastStatusTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
+
                 Map<String, String> respMap = new HashMap<String, String>();
                 respMap.put(ServerConstants.JsonConst.COIN_STATUS, String.valueOf(deviceInfo.getCounter().isCoinOn()));
                 respMap.put(ServerConstants.JsonConst.PRIZE_STATUS, String.valueOf(deviceInfo.getCounter().isPrizeOn()));
@@ -53,7 +56,6 @@ public class CounterStatusHandler extends HttpServerHandler implements HttpJsonH
 
                 response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
             }
-
         } else {
             logger.warn("Device {} not found!", mac);
             response = null;
@@ -61,3 +63,4 @@ public class CounterStatusHandler extends HttpServerHandler implements HttpJsonH
         return response;
     }
 }
+

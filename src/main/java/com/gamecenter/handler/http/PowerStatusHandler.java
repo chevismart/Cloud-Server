@@ -10,6 +10,7 @@ import com.gamecenter.model.HttpRequestMessage;
 import com.gamecenter.model.HttpResponseMessage;
 import com.gamecenter.model.Power;
 import com.gamecenter.utils.JsonUtil;
+import com.gamecenter.utils.MessageUtil;
 import com.gamecenter.utils.SessionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ public class PowerStatusHandler extends HttpServerHandler implements HttpJsonHan
     @Override
     public HttpResponseMessage handle(HttpRequestMessage request) {
 
-        HttpResponseMessage response = new HttpResponseMessage();
+        HttpResponseMessage response = null;
 
         String mac = request.getParameter(ServerConstants.JsonConst.MAC);
         Map<String, DeviceInfo> deviceInfoMap = SessionUtil.getDeviceInfoByMacAddress(ByteArrayUtil.hexStringToByteArray(mac));
@@ -48,26 +49,17 @@ public class PowerStatusHandler extends HttpServerHandler implements HttpJsonHan
 
             powerProxy.queryPowerStatus(deviceInfo);
 
-            logger.debug("Wait for power status response at {}", new Date());
+            if (MessageUtil.waitForResponse(lastUpdateTime, deviceInfo.getPower().getUpdateTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
+                response = new HttpResponseMessage();
+                Map<String, String> respMap = new HashMap<String, String>();
+                respMap.put(ServerConstants.JsonConst.POWER_STATUS, String.valueOf(power.isStatus()));
+                respMap.put(ServerConstants.JsonConst.POWER_STATUS_UPDATE_TIME, deviceInfo.getPower().getUpdateTime().toString());
 
-            while (!lastUpdateTime.before(deviceInfo.getPower().getUpdateTime())) {
-//
-//                // TODO: To be fixed here and add timeout
-//                deviceInfo.getCounter().setLastStatusTime(new Date());
-//                deviceInfo.getCounter().setCoinOn(true);
+                response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
             }
-
-            logger.debug("Get power status response at {}", deviceInfo.getCounter().getLastStatusTime());
-
-            Map<String, String> respMap = new HashMap<String, String>();
-            respMap.put(ServerConstants.JsonConst.POWER_STATUS, String.valueOf(power.isStatus()));
-            respMap.put(ServerConstants.JsonConst.POWER_STATUS_UPDATE_TIME, deviceInfo.getPower().getUpdateTime().toString());
-
-            response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
 
         } else {
             logger.warn("Device {} not found!", mac);
-            response = null;
         }
 
         return response;

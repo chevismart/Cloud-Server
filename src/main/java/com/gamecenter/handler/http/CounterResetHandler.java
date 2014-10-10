@@ -53,19 +53,20 @@ public class CounterResetHandler extends HttpServerHandler implements HttpJsonHa
             Date lastCoinResetTime = (Date) deviceInfo.getCounter().getLastCoinResetTime().clone();
             Date lastPrizeResetTime = (Date) deviceInfo.getCounter().getLastPrizeResetTime().clone();
 
-            while ((isResetCoin ? !lastCoinResetTime.before(deviceInfo.getCounter().getLastCoinResetTime()) : true)
-                    && (isResetPrize ? !lastPrizeResetTime.before(deviceInfo.getCounter().getLastPrizeResetTime()) : true)) {
-                //TODO: handle timeout here
+            if (isResetCoin ? MessageUtil.waitForResponse(lastCoinResetTime, deviceInfo.getCounter().getLastCoinResetTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND) : true
+                    && isResetPrize ? MessageUtil.waitForResponse(lastPrizeResetTime, deviceInfo.getCounter().getLastPrizeResetTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND) : true) {
+                Map<String, String> respMap = new HashMap<String, String>();
+                respMap.put(ServerConstants.JsonConst.COIN_RESET, String.valueOf(isResetCoin ? true : StringUtils.EMPTY));
+                respMap.put(ServerConstants.JsonConst.PRIZE_RESET, String.valueOf(isResetPrize ? true : StringUtils.EMPTY));
+                respMap.put(ServerConstants.JsonConst.COIN_RESET_TIMESTAMP, deviceInfo.getCounter().getLastCoinResetTime().toString());
+                respMap.put(ServerConstants.JsonConst.PRIZE_RESET_TIMESTAMP, deviceInfo.getCounter().getLastPrizeResetTime().toString());
+
+                response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
             }
-
-            Map<String, String> respMap = new HashMap<String, String>();
-            respMap.put(ServerConstants.JsonConst.COIN_RESET, String.valueOf(isResetCoin ? true : StringUtils.EMPTY));
-            respMap.put(ServerConstants.JsonConst.PRIZE_RESET, String.valueOf(isResetPrize ? true : StringUtils.EMPTY));
-            respMap.put(ServerConstants.JsonConst.COIN_RESET_TIMESTAMP, deviceInfo.getCounter().getLastCoinResetTime().toString());
-            respMap.put(ServerConstants.JsonConst.PRIZE_RESET_TIMESTAMP, deviceInfo.getCounter().getLastPrizeResetTime().toString());
-
-            response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
-
+//            while ((isResetCoin ? !lastCoinResetTime.before(deviceInfo.getCounter().getLastCoinResetTime()) : true)
+//                    && (isResetPrize ? !lastPrizeResetTime.before(deviceInfo.getCounter().getLastPrizeResetTime()) : true)) {
+//                //TODO: handle timeout here
+//            }
         } else {
             logger.warn("Device {} not found!", mac);
             response = null;

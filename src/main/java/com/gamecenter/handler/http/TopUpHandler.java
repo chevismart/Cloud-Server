@@ -10,6 +10,7 @@ import com.gamecenter.model.HttpRequestMessage;
 import com.gamecenter.model.HttpResponseMessage;
 import com.gamecenter.model.TopUp;
 import com.gamecenter.utils.JsonUtil;
+import com.gamecenter.utils.MessageUtil;
 import com.gamecenter.utils.SessionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,24 +53,17 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
 
             TopUp topUp = deviceInfo.getTopUpHistory().get(refId);
 
-            boolean topUpResult = false;
+            if (null != topUp && MessageUtil.waitForResponse(now, topUp.getUpdateTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
+                boolean topUpResult = topUp.isTopUpResult();
 
-            if (null != topUp) {
+                Map<String, String> respMap = new HashMap<String, String>();
+                respMap.put(ServerConstants.JsonConst.TOP_UP_RESULT, String.valueOf(topUpResult));
+                respMap.put(ServerConstants.JsonConst.TOP_UP_REFERENCE_ID, topUp.getReferenceId());
+                respMap.put(ServerConstants.JsonConst.TOP_UP_RESULT_TIMESTAMP, topUp.getUpdateTime().toString());
 
-                while (!now.before(topUp.getUpdateTime())) {
-                    //TODO: handle timeout here
-                }
-
-                topUpResult = topUp.isTopUpResult();
-
+                response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
             }
 
-            Map<String, String> respMap = new HashMap<String, String>();
-            respMap.put(ServerConstants.JsonConst.TOP_UP_RESULT, String.valueOf(topUpResult));
-            respMap.put(ServerConstants.JsonConst.TOP_UP_REFERENCE_ID, topUp.getReferenceId());
-            respMap.put(ServerConstants.JsonConst.TOP_UP_RESULT_TIMESTAMP, topUp.getUpdateTime().toString());
-
-            response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
 
         } else {
             logger.warn("Device {} not found!", mac);

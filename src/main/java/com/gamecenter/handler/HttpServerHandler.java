@@ -57,67 +57,71 @@ public class HttpServerHandler extends IoHandlerAdapter {
 
     @Override
     public void messageReceived(IoSession session, Object message) {
-        // Check that we can service the request context
-        HttpRequestMessage request = (HttpRequestMessage) message;
-        String centerId = request.getParameter(ServerConstants.JsonConst.CENTER_ID);
-        String token = request.getParameter(ServerConstants.JsonConst.TOKEN);
-        ServerEnum.Json.DataType dataType = ServerEnum.Json.DataType.valueOf(request.getParameter(ServerConstants.JsonConst.DATA_TYPE));
-        ServerEnum.Json.RequestType requestType = ServerEnum.Json.RequestType.valueOf(request.getParameter(ServerConstants.JsonConst.REQUEST_TYPE));
+
+        try {
+            // Check that we can service the request context
+            HttpRequestMessage request = (HttpRequestMessage) message;
+            String centerId = request.getParameter(ServerConstants.JsonConst.CENTER_ID);
+            String token = request.getParameter(ServerConstants.JsonConst.TOKEN);
+            ServerEnum.Json.DataType dataType = ServerEnum.Json.DataType.valueOf(request.getParameter(ServerConstants.JsonConst.DATA_TYPE));
+            ServerEnum.Json.RequestType requestType = ServerEnum.Json.RequestType.valueOf(request.getParameter(ServerConstants.JsonConst.REQUEST_TYPE));
 
 
-        logger.info("centerId = {}", centerId);
-        logger.info("token = {}", token);
-        logger.info("dataType = {}", dataType);
-        logger.info("requestType = {}", requestType);
+            logger.info("centerId = {}", centerId);
+            logger.info("token = {}", token);
+            logger.info("dataType = {}", dataType);
+            logger.info("requestType = {}", requestType);
 
-        HttpResponseMessage response = new HttpResponseMessage();
+            HttpResponseMessage response = new HttpResponseMessage();
 
-        if (null != this.tokenMap && token.equals(tokenMap.get(centerId))) {
-            HashMap<String, DeviceInfo> map = Initialization.getInstance().getClientMap();
-            logger.info("Session Map  = {}", map);
-            if (null != map && !map.isEmpty()) {
-                for (String ip : map.keySet()) {
-                    System.err.println(ip);
+            if (null != this.tokenMap && token.equals(tokenMap.get(centerId))) {
+                HashMap<String, DeviceInfo> map = Initialization.getInstance().getClientMap();
+                logger.info("Session Map  = {}", map);
+                if (null != map && !map.isEmpty()) {
+                    for (String ip : map.keySet()) {
+                        System.err.println(ip);
+                    }
                 }
-            }
+
+                switch (requestType) {
+                    case CLIENT_LIST:
+                        handler = new ClientListHandler(deviceListProxy);
+                        break;
+                    case COUNTER_STATUS:
+                        handler = new CounterStatusHandler(counterProxy);
+                        break;
+                    case COUNTER_QTY:
+                        handler = new CounterQtyHandler(counterProxy);
+                        break;
+                    case COUNTER_RESET:
+                        handler = new CounterResetHandler(counterProxy);
+                        break;
+                    case COUNTER_SWITCH:
+                        handler = new CounterSwitchHandler(counterProxy);
+                        break;
+                    case TOP_UP:
+                        handler = new TopUpHandler(counterProxy);
+                        break;
+                    case POWER_STATUS:
+                        handler = new PowerStatusHandler(powerProxy);
+                        break;
+                    case POWER_CONTROL:
+                        handler = new PowerControlHandler(powerProxy);
+                        break;
+                }
 
 
-            switch (requestType) {
-                case CLIENT_LIST:
-                    handler = new ClientListHandler(deviceListProxy);
-                    break;
-                case COUNTER_STATUS:
-                    handler = new CounterStatusHandler(counterProxy);
-                    break;
-                case COUNTER_QTY:
-                    handler = new CounterQtyHandler(counterProxy);
-                    break;
-                case COUNTER_RESET:
-                    handler = new CounterResetHandler(counterProxy);
-                    break;
-                case TOP_UP:
-                    handler = new TopUpHandler(counterProxy);
-                    break;
-                case POWER_STATUS:
-                    handler = new PowerStatusHandler(powerProxy);
-                    break;
-                case POWER_CONTROL:
-                    handler = new PowerControlHandler(powerProxy);
-                    break;
-            }
+                response.setContentType("application/json");
 
+                if (handler != null) {
 
-            response.setContentType("application/json");
+                    response = handler.handle(request);
 
-            if (handler != null) {
-
-                response = handler.handle(request);
-
-                response.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
-            } else {
-                logger.error("There is no handler for http request of {}", requestType);
-                response.setResponseCode(HttpResponseMessage.HTTP_STATUS_NOT_FOUND);
-            }
+                    response.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
+                } else {
+                    logger.error("There is no handler for http request of {}", requestType);
+                    response.setResponseCode(HttpResponseMessage.HTTP_STATUS_NOT_FOUND);
+                }
 
 
 //        msg.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
@@ -131,23 +135,28 @@ public class HttpServerHandler extends IoHandlerAdapter {
 //        java.util.Date()));
 //        System.out.println("#################### - status="+ta.state+", index="+message.getIndex());
 
-            // Unknown request
+                // Unknown request
 //        response = new HttpResponseMessage();
 //        response.setResponseCode(HttpResponseMessage.HTTP_STATUS_NOT_FOUND);
 //        response.appendBody(String.format(
 //        "<html><body><h1>UNKNOWN REQUEST %d</h1></body></html>",
 //        HttpResponseMessage.HTTP_STATUS_NOT_FOUND));
 
-            System.err.println(response);
+                System.err.println(response);
 
 
-        } else {
-            logger.warn("Invalid token({}) for centerId {}", token, centerId);
-        }
+            } else {
+                logger.warn("Invalid token({}) for centerId {}", token, centerId);
+            }
 
 
-        if (response != null) {
-            session.write(response).addListener(IoFutureListener.CLOSE);
+            if (response != null) {
+                session.write(response).addListener(IoFutureListener.CLOSE);
+            }
+
+        } catch (Exception ex) {
+            logger.error("Invalid http request, connection abort!");
+            session.close(true);
         }
     }
 

@@ -21,6 +21,7 @@ public class ServerConstants {
         public final static String COIN_STATUS = "COIN_STATUS";
         public final static String PRIZE_STATUS = "PRIZE_STATUS";
         public final static String COUNTER_STATUS_TIMESTAMP = "COUNTER_STATUS_TIMESTAMP";
+        public final static String COUNTER_SWITCH = "COUNTER_SWITCH";
         public final static String COIN_QTY = "COIN_QTY";
         public final static String PRIZE_QTY = "PRIZE_QTY";
         public final static String COUNTER_QTY_TIMESTAMP = "COUNTER_QTY_TIMESTAMP";

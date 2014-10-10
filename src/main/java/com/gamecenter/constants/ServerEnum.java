@@ -16,11 +16,12 @@ public class ServerEnum {
         }
 
         public enum RequestType {
-            CLIENT_LIST("client_list"),
-            COUNTER_STATUS("counter_status"),
-            COUNTER_QTY("counter_qty"),
-            COUNTER_RESET("counter_reset"),
-            TOP_UP("top_up"),
+            CLIENT_LIST("CLIENT_LIST"),
+            COUNTER_STATUS("COUNTER_STATUS"),
+            COUNTER_QTY("COUNTER_QTY"),
+            COUNTER_RESET("COUNTER_RESET"),
+            COUNTER_SWITCH("COUNTER_SWITCH"),
+            TOP_UP("TOP_UP"),
             POWER_STATUS("POWER_STATUS"),
             POWER_CONTROL("POWER_CONTROL");
             String name;

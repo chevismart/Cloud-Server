@@ -15,6 +15,43 @@ import java.net.InetSocketAddress;
  * Created by Boss on 2014/8/30.
  */
 public class MinaHttpServer implements Server {
+    /**
+     * Default HTTP port
+     */
+    private static final int DEFAULT_PORT = 8003;
+    private NioSocketAcceptor acceptor;
+    private boolean isRunning;
+    private String encoding;
+    private HttpJsonHandler httpJsonHandler;
+
+    public static void main(String[] args) {
+        int port = DEFAULT_PORT;
+
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("-port")) {
+                port = Integer.parseInt(args[i + 1]);
+            }
+        }
+
+        try {
+            // Create an acceptor
+            NioSocketAcceptor acceptor = new NioSocketAcceptor();
+
+            // Create a service configuration
+            acceptor.getFilterChain().addLast(
+                    "protocolFilter",
+                    new ProtocolCodecFilter(
+                            new HttpServerProtocolCodecFactory()));
+            acceptor.getFilterChain().addLast("logger", new LoggingFilter());
+            acceptor.setHandler(new HttpServerHandler());
+            acceptor.bind(new InetSocketAddress(port));
+
+            System.out.println("Server now listening on port " + port);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     @Override
     public void start() {
         int port = DEFAULT_PORT;
@@ -37,14 +74,6 @@ public class MinaHttpServer implements Server {
             ex.printStackTrace();
         }
     }
-
-    /** Default HTTP port */
-    private static final int DEFAULT_PORT = 8080;
-    private NioSocketAcceptor acceptor;
-    private boolean isRunning;
-
-    private String encoding;
-    private HttpJsonHandler httpJsonHandler;
 
     public String getEncoding() {
         return encoding;
@@ -116,34 +145,6 @@ public class MinaHttpServer implements Server {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    public static void main(String[] args) {
-        int port = DEFAULT_PORT;
-
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-port")) {
-                port = Integer.parseInt(args[i + 1]);
-            }
-        }
-
-        try {
-            // Create an acceptor
-            NioSocketAcceptor acceptor = new NioSocketAcceptor();
-
-            // Create a service configuration
-            acceptor.getFilterChain().addLast(
-                    "protocolFilter",
-                    new ProtocolCodecFilter(
-                            new HttpServerProtocolCodecFactory()));
-            acceptor.getFilterChain().addLast("logger", new LoggingFilter());
-            acceptor.setHandler(new HttpServerHandler());
-            acceptor.bind(new InetSocketAddress(port));
-
-            System.out.println("Server now listening on port " + port);
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
     }
 }
