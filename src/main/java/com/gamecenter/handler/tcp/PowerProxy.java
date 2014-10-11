@@ -1,10 +1,7 @@
 package com.gamecenter.handler.tcp;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
-import com.gamecenter.handler.HttpJsonHandler;
 import com.gamecenter.model.DeviceInfo;
-import com.gamecenter.model.HttpRequestMessage;
-import com.gamecenter.model.HttpResponseMessage;
 import com.gamecenter.utils.MessageUtil;
 import org.apache.mina.core.future.IoFuture;
 import org.apache.mina.core.future.WriteFuture;
@@ -19,7 +16,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by Chevis on 14-10-3.
  */
-public class PowerProxy extends DeviceProxy implements HttpJsonHandler {
+public class PowerProxy extends DeviceProxy {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -55,10 +52,5 @@ public class PowerProxy extends DeviceProxy implements HttpJsonHandler {
         WriteFuture writeFuture = ioSession.write(message);
 
         return writeFuture;
-    }
-
-    @Override
-    public HttpResponseMessage handle(HttpRequestMessage request) {
-        return null;
     }
 }

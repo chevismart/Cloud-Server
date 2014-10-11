@@ -27,6 +27,10 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
     private final CounterProxy counterProxy;
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    DeviceInfo deviceInfo;
+    Date requestTime;
+    TopUp topUp;
+
     public TopUpHandler(CounterProxy counterProxy) {
         this.counterProxy = counterProxy;
     }
@@ -40,20 +44,20 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
         Map<String, DeviceInfo> deviceInfoMap = SessionUtil.getDeviceInfoByMacAddress(ByteArrayUtil.hexStringToByteArray(mac));
         if (null != deviceInfoMap && !deviceInfoMap.isEmpty()) {
 
-            DeviceInfo deviceInfo = deviceInfoMap.values().iterator().next();
+            deviceInfo = deviceInfoMap.values().iterator().next();
 
             String refId = request.getParameter(ServerConstants.JsonConst.TOP_UP_REFERENCE_ID);
             int coinQty = Integer.valueOf(request.getParameter(ServerConstants.JsonConst.TOP_UP_COIN_QTY));
 
-            Date now = new Date();
+            requestTime = new Date();
 
-            counterProxy.topUpCoins(deviceInfo, coinQty, refId, now);
+            counterProxy.topUpCoins(deviceInfo, coinQty, refId, requestTime);
 
-            logger.info("Top up time is {}", now);
+            logger.info("Top up time is {}", requestTime);
 
-            TopUp topUp = deviceInfo.getTopUpHistory().get(refId);
+            topUp = deviceInfo.getTopUpHistory().get(refId);
 
-            if (null != topUp && MessageUtil.waitForResponse(now, topUp.getUpdateTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
+            if (null != topUp && MessageUtil.waitForResponse(this, MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
                 boolean topUpResult = topUp.isTopUpResult();
 
                 Map<String, String> respMap = new HashMap<String, String>();
@@ -71,5 +75,20 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
         }
 
         return response;
+    }
+
+    @Override
+    public boolean await() {
+        return MessageUtil.isKeeyWaiting(getRequestTime(), getUpdateTime());
+    }
+
+    @Override
+    public Date getRequestTime() {
+        return requestTime;
+    }
+
+    @Override
+    public Date getUpdateTime() {
+        return topUp.getUpdateTime();
     }
 }

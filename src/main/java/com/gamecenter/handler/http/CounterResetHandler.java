@@ -27,6 +27,12 @@ public class CounterResetHandler extends HttpServerHandler implements HttpJsonHa
     private final CounterProxy counterProxy;
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    DeviceInfo deviceInfo;
+    boolean isResetCoin;
+    boolean isResetPrize;
+    Date lastCoinResetTime;
+    Date lastPrizeResetTime;
+
     public CounterResetHandler(CounterProxy counterProxy) {
         this.counterProxy = counterProxy;
     }
@@ -36,25 +42,24 @@ public class CounterResetHandler extends HttpServerHandler implements HttpJsonHa
 
         HttpResponseMessage response = new HttpResponseMessage();
 
-
         String mac = request.getParameter(ServerConstants.JsonConst.MAC);
         Map<String, DeviceInfo> deviceInfoMap = SessionUtil.getDeviceInfoByMacAddress(ByteArrayUtil.hexStringToByteArray(mac));
         if (null != deviceInfoMap && !deviceInfoMap.isEmpty()) {
 
-            DeviceInfo deviceInfo = deviceInfoMap.values().iterator().next();
+            deviceInfo = deviceInfoMap.values().iterator().next();
 
             String resetCoin = request.getParameter(ServerConstants.JsonConst.COIN_RESET);
             String resetPrize = request.getParameter(ServerConstants.JsonConst.PRIZE_RESET);
-            boolean isResetCoin = MessageUtil.isTrue(resetCoin);
-            boolean isResetPrize = MessageUtil.isTrue(resetPrize);
+            isResetCoin = MessageUtil.isTrue(resetCoin);
+            isResetPrize = MessageUtil.isTrue(resetPrize);
 
             counterProxy.resetCounter(isResetCoin, isResetPrize, deviceInfo);
 
-            Date lastCoinResetTime = (Date) deviceInfo.getCounter().getLastCoinResetTime().clone();
-            Date lastPrizeResetTime = (Date) deviceInfo.getCounter().getLastPrizeResetTime().clone();
+            lastCoinResetTime = (Date) deviceInfo.getCounter().getLastCoinResetTime().clone();
+            lastPrizeResetTime = (Date) deviceInfo.getCounter().getLastPrizeResetTime().clone();
 
-            if (isResetCoin ? MessageUtil.waitForResponse(lastCoinResetTime, deviceInfo.getCounter().getLastCoinResetTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND) : true
-                    && isResetPrize ? MessageUtil.waitForResponse(lastPrizeResetTime, deviceInfo.getCounter().getLastPrizeResetTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND) : true) {
+            if ((isResetCoin || isResetPrize) && MessageUtil.waitForResponse(this, MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
+
                 Map<String, String> respMap = new HashMap<String, String>();
                 respMap.put(ServerConstants.JsonConst.COIN_RESET, String.valueOf(isResetCoin ? true : StringUtils.EMPTY));
                 respMap.put(ServerConstants.JsonConst.PRIZE_RESET, String.valueOf(isResetPrize ? true : StringUtils.EMPTY));
@@ -63,15 +68,33 @@ public class CounterResetHandler extends HttpServerHandler implements HttpJsonHa
 
                 response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
             }
-//            while ((isResetCoin ? !lastCoinResetTime.before(deviceInfo.getCounter().getLastCoinResetTime()) : true)
-//                    && (isResetPrize ? !lastPrizeResetTime.before(deviceInfo.getCounter().getLastPrizeResetTime()) : true)) {
-//                //TODO: handle timeout here
-//            }
+        } else if (!isResetPrize && !isResetCoin) {
+            logger.error("Invalid request for reset none of coin nor prize!");
         } else {
             logger.warn("Device {} not found!", mac);
             response = null;
         }
 
         return response;
+    }
+
+    @Override
+    public boolean await() {
+        return MessageUtil.isKeeyWaiting(getRequestTime(), getUpdateTime());
+    }
+
+    @Override
+    public Date getRequestTime() {
+
+        return (this.isResetCoin && this.isResetPrize) ? lastCoinResetTime :
+                (isResetCoin ? lastCoinResetTime :
+                        (isResetPrize ? lastPrizeResetTime : null));
+    }
+
+    @Override
+    public Date getUpdateTime() {
+        return (this.isResetCoin && this.isResetPrize) ? deviceInfo.getCounter().getLastCoinResetTime() :
+                (isResetCoin ? deviceInfo.getCounter().getLastCoinResetTime() :
+                        (isResetPrize ? deviceInfo.getCounter().getLastPrizeResetTime() : null));
     }
 }

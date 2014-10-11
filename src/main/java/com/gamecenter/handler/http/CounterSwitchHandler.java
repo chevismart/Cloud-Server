@@ -26,6 +26,10 @@ public class CounterSwitchHandler extends HttpServerHandler implements HttpJsonH
     private final CounterProxy counterProxy;
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    Date lastQuery;
+    DeviceInfo deviceInfo;
+
+
     public CounterSwitchHandler(CounterProxy counterProxy) {
         this.counterProxy = counterProxy;
     }
@@ -37,17 +41,17 @@ public class CounterSwitchHandler extends HttpServerHandler implements HttpJsonH
         String mac = request.getParameter(ServerConstants.JsonConst.MAC);
         Map<String, DeviceInfo> deviceInfoMap = SessionUtil.getDeviceInfoByMacAddress(ByteArrayUtil.hexStringToByteArray(mac));
         if (null != deviceInfoMap && !deviceInfoMap.isEmpty()) {
-            DeviceInfo deviceInfo = deviceInfoMap.values().iterator().next();
+            deviceInfo = deviceInfoMap.values().iterator().next();
 
             String switcher = request.getParameter(ServerConstants.JsonConst.COUNTER_SWITCH);
 
-            Date lastQuery = (Date) deviceInfo.getCounter().getLastStatusTime().clone();
+            lastQuery = (Date) deviceInfo.getCounter().getLastStatusTime().clone();
 
             counterProxy.switchCounter(deviceInfo, MessageUtil.isTrue(switcher));
 
             logger.debug("Wait for counter status response at {}", new Date());
 
-            if (MessageUtil.waitForResponse(lastQuery, deviceInfo.getCounter().getLastStatusTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
+            if (MessageUtil.waitForResponse(this, MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
 
                 Map<String, String> respMap = new HashMap<String, String>();
                 respMap.put(ServerConstants.JsonConst.COIN_STATUS, String.valueOf(deviceInfo.getCounter().isCoinOn()));
@@ -61,6 +65,21 @@ public class CounterSwitchHandler extends HttpServerHandler implements HttpJsonH
             response = null;
         }
         return response;
+    }
+
+    @Override
+    public boolean await() {
+        return MessageUtil.isKeeyWaiting(lastQuery, deviceInfo.getCounter().getLastStatusTime());
+    }
+
+    @Override
+    public Date getRequestTime() {
+        return lastQuery;
+    }
+
+    @Override
+    public Date getUpdateTime() {
+        return deviceInfo.getCounter().getLastStatusTime();
     }
 }
 

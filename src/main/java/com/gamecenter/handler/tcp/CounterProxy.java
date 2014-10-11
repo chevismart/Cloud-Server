@@ -1,10 +1,7 @@
 package com.gamecenter.handler.tcp;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
-import com.gamecenter.handler.HttpJsonHandler;
 import com.gamecenter.model.DeviceInfo;
-import com.gamecenter.model.HttpRequestMessage;
-import com.gamecenter.model.HttpResponseMessage;
 import com.gamecenter.model.TopUp;
 import com.gamecenter.utils.MessageUtil;
 import org.apache.mina.core.future.IoFuture;
@@ -21,7 +18,7 @@ import java.util.Date;
 /**
  * Created by Chevis on 14-9-19.
  */
-public class CounterProxy extends DeviceProxy implements HttpJsonHandler {
+public class CounterProxy extends DeviceProxy {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -99,10 +96,5 @@ public class CounterProxy extends DeviceProxy implements HttpJsonHandler {
         WriteFuture writeFuture = ioSession.write(message);
 
         return writeFuture;
-    }
-
-    @Override
-    public HttpResponseMessage handle(HttpRequestMessage request) {
-        return null;
     }
 }

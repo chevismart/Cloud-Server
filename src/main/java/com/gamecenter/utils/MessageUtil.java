@@ -1,6 +1,7 @@
 package com.gamecenter.utils;
 
 import com.gamecenter.constants.ServerConstants;
+import com.gamecenter.handler.HttpJsonHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,26 +52,31 @@ public class MessageUtil {
         return new Date(expiryTime);
     }
 
-    public static boolean waitForResponse(Date startTime, Date targetTime, int timeoutInSecond) {
-        if (null != startTime && null != targetTime && timeoutInSecond > 0) {
-            logger.debug("Raised request at {}", new Date());
-            boolean isReplied = false;
-            while (!startTime.before(targetTime)) {
-                if (!startTime.before(getExpireTime(startTime, timeoutInSecond))) {
-                    isReplied = true;
+    public static boolean waitForResponse(HttpJsonHandler handler, int timeoutInSecond) {
+
+
+        if (null != handler && timeoutInSecond > 0) {
+            boolean isExpired = false;
+            Date expiredTime = getExpireTime(handler.getUpdateTime(), timeoutInSecond);
+            while (!handler.await()) {
+                if (!handler.getRequestTime().before(expiredTime)) {
+                    isExpired = true;
                     break;
                 }
             }
-            if (isReplied) {
-                logger.debug("Received response at {}", targetTime);
-                logger.info("Travel for time TCP is {} milliseconds.", targetTime.getTime() - startTime.getTime());
+            if (!isExpired) {
+                logger.info("Received response at {} {}", handler.getUpdateTime(), handler.getUpdateTime().getTime());
             } else {
                 logger.warn("Request Timeout!");
             }
-            return isReplied;
+            return !isExpired;
         } else {
-            logger.error("Invalid parameters! Start time = {}, targetTime = {}, timeout = {}", startTime, targetTime, timeoutInSecond);
+            logger.error("Invalid parameters! Start time = {}, targetTime = {}, timeout = {}", handler.getUpdateTime(), handler.getRequestTime(), timeoutInSecond);
             return false;
         }
+    }
+
+    public static boolean isKeeyWaiting(Date requestTime, Date targetTime) {
+        return !requestTime.before(targetTime);
     }
 }

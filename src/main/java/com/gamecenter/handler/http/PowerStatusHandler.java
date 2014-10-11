@@ -26,11 +26,12 @@ public class PowerStatusHandler extends HttpServerHandler implements HttpJsonHan
 
     private final PowerProxy powerProxy;
     Logger logger = LoggerFactory.getLogger(this.getClass());
+    DeviceInfo deviceInfo;
+    Date lastUpdateTime;
 
     public PowerStatusHandler(PowerProxy powerProxy) {
         this.powerProxy = powerProxy;
     }
-
 
     @Override
     public HttpResponseMessage handle(HttpRequestMessage request) {
@@ -41,15 +42,15 @@ public class PowerStatusHandler extends HttpServerHandler implements HttpJsonHan
         Map<String, DeviceInfo> deviceInfoMap = SessionUtil.getDeviceInfoByMacAddress(ByteArrayUtil.hexStringToByteArray(mac));
         if (null != deviceInfoMap && !deviceInfoMap.isEmpty()) {
 
-            DeviceInfo deviceInfo = deviceInfoMap.values().iterator().next();
+            deviceInfo = deviceInfoMap.values().iterator().next();
 
             Power power = deviceInfo.getPower();
 
-            Date lastUpdateTime = (Date) power.getUpdateTime().clone();
+            lastUpdateTime = (Date) power.getUpdateTime().clone();
 
             powerProxy.queryPowerStatus(deviceInfo);
 
-            if (MessageUtil.waitForResponse(lastUpdateTime, deviceInfo.getPower().getUpdateTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
+            if (MessageUtil.waitForResponse(this, MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
                 response = new HttpResponseMessage();
                 Map<String, String> respMap = new HashMap<String, String>();
                 respMap.put(ServerConstants.JsonConst.POWER_STATUS, String.valueOf(power.isStatus()));
@@ -63,5 +64,20 @@ public class PowerStatusHandler extends HttpServerHandler implements HttpJsonHan
         }
 
         return response;
+    }
+
+    @Override
+    public boolean await() {
+        return MessageUtil.isKeeyWaiting(getRequestTime(), getUpdateTime());
+    }
+
+    @Override
+    public Date getRequestTime() {
+        return lastUpdateTime;
+    }
+
+    @Override
+    public Date getUpdateTime() {
+        return deviceInfo.getPower().getUpdateTime();
     }
 }

@@ -10,6 +10,7 @@ import com.gamecenter.utils.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,5 +104,20 @@ public class ClientListHandler extends HttpServerHandler implements HttpJsonHand
 
 
         return response;
+    }
+
+    @Override
+    public boolean await() {
+        return false;
+    }
+
+    @Override
+    public Date getRequestTime() {
+        return null;
+    }
+
+    @Override
+    public Date getUpdateTime() {
+        return null;
     }
 }

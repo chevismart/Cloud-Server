@@ -25,6 +25,8 @@ public class CounterQtyHandler extends HttpServerHandler implements HttpJsonHand
 
     private final CounterProxy counterProxy;
     Logger logger = LoggerFactory.getLogger(this.getClass());
+    Date lastQuery;
+    DeviceInfo deviceInfo;
 
     public CounterQtyHandler(CounterProxy counterProxy) {
         this.counterProxy = counterProxy;
@@ -39,7 +41,7 @@ public class CounterQtyHandler extends HttpServerHandler implements HttpJsonHand
         Map<String, DeviceInfo> deviceInfoMap = SessionUtil.getDeviceInfoByMacAddress(ByteArrayUtil.hexStringToByteArray(mac));
         if (null != deviceInfoMap && !deviceInfoMap.isEmpty()) {
 
-            DeviceInfo deviceInfo = deviceInfoMap.values().iterator().next();
+            deviceInfo = deviceInfoMap.values().iterator().next();
 
             String queryCoin = request.getParameter(ServerConstants.JsonConst.COIN_QTY);
             String queryPrize = request.getParameter(ServerConstants.JsonConst.PRIZE_QTY);
@@ -48,9 +50,9 @@ public class CounterQtyHandler extends HttpServerHandler implements HttpJsonHand
 
             counterProxy.refreshCounterQty(isQueryCoin, isQueryPrize, deviceInfo);
 
-            Date lastQuery = deviceInfo.getCounter().getLastQtyTime();
+            lastQuery = deviceInfo.getCounter().getLastQtyTime();
 
-            if (MessageUtil.waitForResponse(lastQuery, deviceInfo.getCounter().getLastQtyTime(), MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
+            if (MessageUtil.waitForResponse(this, MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
                 Map<String, String> respMap = new HashMap<String, String>();
                 respMap.put(ServerConstants.JsonConst.COIN_QTY, String.valueOf(deviceInfo.getCounter().getCoinQty()));
                 respMap.put(ServerConstants.JsonConst.PRIZE_QTY, String.valueOf(deviceInfo.getCounter().getPrizeQty()));
@@ -64,5 +66,20 @@ public class CounterQtyHandler extends HttpServerHandler implements HttpJsonHand
         }
 
         return response;
+    }
+
+    @Override
+    public boolean await() {
+        return MessageUtil.isKeeyWaiting(getRequestTime(), getUpdateTime());
+    }
+
+    @Override
+    public Date getRequestTime() {
+        return lastQuery;
+    }
+
+    @Override
+    public Date getUpdateTime() {
+        return deviceInfo.getCounter().getLastQtyTime();
     }
 }
