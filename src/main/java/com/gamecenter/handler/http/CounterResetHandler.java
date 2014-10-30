@@ -63,8 +63,8 @@ public class CounterResetHandler extends HttpServerHandler implements HttpJsonHa
                 Map<String, String> respMap = new HashMap<String, String>();
                 respMap.put(ServerConstants.JsonConst.COIN_RESET, String.valueOf(isResetCoin ? true : StringUtils.EMPTY));
                 respMap.put(ServerConstants.JsonConst.PRIZE_RESET, String.valueOf(isResetPrize ? true : StringUtils.EMPTY));
-                respMap.put(ServerConstants.JsonConst.COIN_RESET_TIMESTAMP, deviceInfo.getCounter().getLastCoinResetTime().toString());
-                respMap.put(ServerConstants.JsonConst.PRIZE_RESET_TIMESTAMP, deviceInfo.getCounter().getLastPrizeResetTime().toString());
+                respMap.put(ServerConstants.JsonConst.COIN_RESET_TIMESTAMP, String.valueOf(deviceInfo.getCounter().getLastCoinResetTime().getTime()));
+                respMap.put(ServerConstants.JsonConst.PRIZE_RESET_TIMESTAMP, String.valueOf(deviceInfo.getCounter().getLastPrizeResetTime().getTime()));
 
                 response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
             }

@@ -52,7 +52,8 @@ public class CounterStatusHandler extends HttpServerHandler implements HttpJsonH
                 Map<String, String> respMap = new HashMap<String, String>();
                 respMap.put(ServerConstants.JsonConst.COIN_STATUS, String.valueOf(deviceInfo.getCounter().isCoinOn()));
                 respMap.put(ServerConstants.JsonConst.PRIZE_STATUS, String.valueOf(deviceInfo.getCounter().isPrizeOn()));
-                respMap.put(ServerConstants.JsonConst.COUNTER_STATUS_TIMESTAMP, deviceInfo.getCounter().getLastStatusTime().toString());
+                respMap.put(ServerConstants.JsonConst.COUNTER_STATUS_TIMESTAMP, String.valueOf(deviceInfo.getCounter().getLastStatusTime().toString()));
+//                respMap.put(ServerConstants.JsonConst.COIN_RESET_TIMESTAMP, String.valueOf(deviceInfo.getCounter().getLastPrizeResetTime().getTime()));
 
                 response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
             }

@@ -56,7 +56,9 @@ public class CounterQtyHandler extends HttpServerHandler implements HttpJsonHand
                 Map<String, String> respMap = new HashMap<String, String>();
                 respMap.put(ServerConstants.JsonConst.COIN_QTY, String.valueOf(deviceInfo.getCounter().getCoinQty()));
                 respMap.put(ServerConstants.JsonConst.PRIZE_QTY, String.valueOf(deviceInfo.getCounter().getPrizeQty()));
-                respMap.put(ServerConstants.JsonConst.COUNTER_QTY_TIMESTAMP, deviceInfo.getCounter().getLastQtyTime().toString());
+                respMap.put(ServerConstants.JsonConst.COUNTER_QTY_TIMESTAMP, String.valueOf(deviceInfo.getCounter().getLastQtyTime().getTime()));
+//                respMap.put(ServerConstants.JsonConst.COIN_RESET_TIMESTAMP, String.valueOf(deviceInfo.getCounter().getLastPrizeResetTime().getTime()));
+//                respMap.put(ServerConstants.JsonConst.PRIZE_RESET_TIMESTAMP, String.valueOf(deviceInfo.getCounter().getLastPrizeResetTime().getTime()));
 
                 response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
             }

@@ -116,7 +116,7 @@ public class HttpServerHandler extends IoHandlerAdapter {
                 if (handler != null) {
 
                     response = handler.handle(request);
-
+//                    response.getHeaders().put("Access-Control-Allow-Origin", "*");
                     response.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
                 } else {
                     logger.error("There is no handler for http request of {}", requestType);
