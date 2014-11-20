@@ -1,0 +1,1 @@
+regsvr32 %windir%\system32\WSHom.Ocx
