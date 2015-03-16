@@ -79,7 +79,7 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
 
     @Override
     public boolean await() {
-        return MessageUtil.isKeeyWaiting(getRequestTime(), getUpdateTime());
+        return MessageUtil.isKeepWaiting(getRequestTime(), getUpdateTime());
     }
 
     @Override

@@ -67,7 +67,7 @@ public class CounterStatusHandler extends HttpServerHandler implements HttpJsonH
 
     @Override
     public boolean await() {
-        return MessageUtil.isKeeyWaiting(lastQuery, deviceInfo.getCounter().getLastStatusTime());
+        return MessageUtil.isKeepWaiting(lastQuery, deviceInfo.getCounter().getLastStatusTime());
     }
 
     @Override

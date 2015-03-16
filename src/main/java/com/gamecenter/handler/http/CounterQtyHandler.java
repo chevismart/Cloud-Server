@@ -72,7 +72,7 @@ public class CounterQtyHandler extends HttpServerHandler implements HttpJsonHand
 
     @Override
     public boolean await() {
-        return MessageUtil.isKeeyWaiting(getRequestTime(), getUpdateTime());
+        return MessageUtil.isKeepWaiting(getRequestTime(), getUpdateTime());
     }
 
     @Override

@@ -15,7 +15,7 @@ public class DeviceInfo {
     private IoSession session;
     private MessageHeader messageHeader;
     private Counter counter;
-    private Map<String, TopUp> topUpHistory;
+    private Map<String, TopUp> topUpHistory; // referenceId : topup
     private Power power;
 
     public DeviceInfo() {

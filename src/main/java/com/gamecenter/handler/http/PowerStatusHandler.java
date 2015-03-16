@@ -68,7 +68,7 @@ public class PowerStatusHandler extends HttpServerHandler implements HttpJsonHan
 
     @Override
     public boolean await() {
-        return MessageUtil.isKeeyWaiting(getRequestTime(), getUpdateTime());
+        return MessageUtil.isKeepWaiting(getRequestTime(), getUpdateTime());
     }
 
     @Override

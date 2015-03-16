@@ -72,7 +72,7 @@ public class PowerControlHandler extends HttpServerHandler implements HttpJsonHa
 
     @Override
     public boolean await() {
-        return MessageUtil.isKeeyWaiting(getRequestTime(), getUpdateTime());
+        return MessageUtil.isKeepWaiting(getRequestTime(), getUpdateTime());
     }
 
     @Override
