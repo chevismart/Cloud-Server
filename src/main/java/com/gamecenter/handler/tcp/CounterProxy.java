@@ -51,7 +51,7 @@ public class CounterProxy extends DeviceProxy {
 
         deviceInfo.getTopUpHistory().put(request.getReferenceId(), topUp);
 
-        execute(request.build(), deviceInfo.getSession());
+        WriteFuture future = (WriteFuture) execute(request.build(), deviceInfo.getSession());
         logger.info("Message({}) sent: {}", ByteArrayUtil.toHexString(request.build()), request.toString());
     }
 

@@ -34,11 +34,15 @@ public class TopUpHandler implements TcpHandler {
         Map<String, TopUp> topUpHistory = deviceInfo.getTopUpHistory();
 
         TopUp topUp = topUpHistory.get(response.getReferenceId());
+        if (topUp != null) {
+            topUp.setTopUpResult(MessageUtil.isSuccess(response.getTopUpResult()));
+            topUp.setUpdateTime(new Date());
+            topUp.setDeviceReplied(true);
 
-        topUp.setTopUpResult(MessageUtil.isSuccess(response.getTopUpResult()));
-        topUp.setUpdateTime(new Date());
-
-        logger.info("Handle top up for {} successfully: {}", topUp.getReferenceId(), topUp);
+            logger.info("Handle top up for {} successfully: {}", topUp.getReferenceId(), topUp);
+        } else {
+            logger.warn("Top up history is not found!");
+        }
         return null;
     }
 }

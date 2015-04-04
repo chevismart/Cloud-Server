@@ -4,8 +4,8 @@ import org.apache.mina.core.session.IoSession;
 import org.gamecenter.serializer.messages.MessageHeader;
 import org.gamecenter.serializer.utils.ByteUtil;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Chevis on 14-9-19.
@@ -19,7 +19,7 @@ public class DeviceInfo {
     private Power power;
 
     public DeviceInfo() {
-        this.topUpHistory = new HashMap<String, TopUp>();
+        this.topUpHistory = new ConcurrentHashMap<String, TopUp>();
         this.counter = new Counter();
         this.power = new Power();
     }

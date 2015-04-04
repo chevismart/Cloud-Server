@@ -116,34 +116,12 @@ public class HttpServerHandler extends IoHandlerAdapter {
                 if (handler != null) {
 
                     response = handler.handle(request);
-//                    response.getHeaders().put("Access-Control-Allow-Origin", "*");
+
                     response.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
                 } else {
                     logger.error("There is no handler for http request of {}", requestType);
                     response.setResponseCode(HttpResponseMessage.HTTP_STATUS_NOT_FOUND);
                 }
-
-
-//        msg.setResponseCode(HttpResponseMessage.HTTP_STATUS_SUCCESS);
-//        byte[] b = new byte[ta.buffer.limit()];
-//        ta.buffer.rewind().get(b);
-//        msg.appendBody(b);
-//        System.out.println("####################");
-//        System.out.println("  GET_TILE RESPONSE SENT - ATTACHMENT GOOD DIAMOND.SI="+d.si+
-//        ", "+new
-//        java.text.SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss.SSS").format(new
-//        java.util.Date()));
-//        System.out.println("#################### - status="+ta.state+", index="+message.getIndex());
-
-                // Unknown request
-//        response = new HttpResponseMessage();
-//        response.setResponseCode(HttpResponseMessage.HTTP_STATUS_NOT_FOUND);
-//        response.appendBody(String.format(
-//        "<html><body><h1>UNKNOWN REQUEST %d</h1></body></html>",
-//        HttpResponseMessage.HTTP_STATUS_NOT_FOUND));
-
-                System.err.println(response);
-
 
             } else {
                 logger.warn("Invalid token({}) for centerId {}", token, centerId);

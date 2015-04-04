@@ -19,6 +19,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.gamecenter.utils.MessageUtil.waitForResponse;
+
 /**
  * Created by Chevis on 14-10-3.
  */
@@ -39,6 +41,7 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
     public HttpResponseMessage handle(HttpRequestMessage request) {
 
         HttpResponseMessage response = new HttpResponseMessage();
+        Map<String, String> respMap = new HashMap<String, String>();
 
         String mac = request.getParameter(ServerConstants.JsonConst.MAC);
         Map<String, DeviceInfo> deviceInfoMap = SessionUtil.getDeviceInfoByMacAddress(ByteArrayUtil.hexStringToByteArray(mac));
@@ -48,33 +51,44 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
 
             String refId = request.getParameter(ServerConstants.JsonConst.TOP_UP_REFERENCE_ID);
             int coinQty = Integer.valueOf(request.getParameter(ServerConstants.JsonConst.TOP_UP_COIN_QTY));
-
-            requestTime = new Date();
-
-            counterProxy.topUpCoins(deviceInfo, coinQty, refId, requestTime);
-
-            logger.info("Top up time is {}", requestTime);
-
-            topUp = deviceInfo.getTopUpHistory().get(refId);
-
-            if (null != topUp && MessageUtil.waitForResponse(this, MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND)) {
-                boolean topUpResult = topUp.isTopUpResult();
-
-                Map<String, String> respMap = new HashMap<String, String>();
-                respMap.put(ServerConstants.JsonConst.TOP_UP_RESULT, String.valueOf(topUpResult));
-                respMap.put(ServerConstants.JsonConst.TOP_UP_REFERENCE_ID, topUp.getReferenceId());
-                respMap.put(ServerConstants.JsonConst.TOP_UP_RESULT_TIMESTAMP, topUp.getUpdateTime().toString());
-
-                response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
+            try {
+                if (!isRefIdProcessing(refId)) {
+                    requestTime = new Date();
+                    logger.info("Top up time is {}", requestTime);
+                    // Raise a topup request by counter proxy and add one record in the topup history.
+                    counterProxy.topUpCoins(deviceInfo, coinQty, refId, requestTime);
+                } else {
+                    logger.warn("Reference [{}] topup request is requested and under processing, waiting for the response.");
+                }
+                topUp = deviceInfo.getTopUpHistory().get(refId);
+                waitForResponse(this, MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND);
+                respMap = getTopUpResultMap(topUp.isTopUpResult());
+                removeRepliedRecord();
+            } catch (Exception e) {
+                logger.error("Topup failed since: {}", e.getMessage());
             }
 
 
         } else {
             logger.warn("Device {} not found!", mac);
-            response = null;
+            respMap = getTopUpResultMap(false);
         }
+        response.appendBody(buildJsonResponse(request, JsonUtil.getJsonFromMap(respMap)));
 
         return response;
+    }
+
+    private boolean isRefIdProcessing(String refId) {
+        return deviceInfo.getTopUpHistory().containsKey(refId);
+    }
+
+    private Map<String, String> getTopUpResultMap(boolean topUpResult) {
+        Map<String, String> respMap = new HashMap<String, String>();
+        respMap.put(ServerConstants.JsonConst.TOP_UP_RESULT, String.valueOf(topUpResult));
+        respMap.put(ServerConstants.JsonConst.TOP_UP_REFERENCE_ID, topUp.getReferenceId());
+        respMap.put(ServerConstants.JsonConst.TOP_UP_RESULT_TIMESTAMP, topUp.getUpdateTime().toString());
+        logger.info("Response content is: {}", respMap);
+        return respMap;
     }
 
     @Override
@@ -90,5 +104,16 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
     @Override
     public Date getUpdateTime() {
         return topUp.getUpdateTime();
+    }
+
+    public void removeRepliedRecord() throws Exception {
+        String referenceId = topUp.getReferenceId();
+        if (topUp.isDeviceReplied() && deviceInfo.getTopUpHistory().containsKey(referenceId)) {
+            deviceInfo.getTopUpHistory().remove(referenceId);
+            logger.info("Remove topup history {} success!",
+                    deviceInfo.getTopUpHistory().containsKey(referenceId) ? "is NOT" : "is");
+        } else {
+            logger.warn("Remove topup request record with reference Id [{}] failed and may since not yet replied or such topup history is not found!");
+        }
     }
 }

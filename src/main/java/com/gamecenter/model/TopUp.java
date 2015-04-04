@@ -8,8 +8,9 @@ import java.util.Date;
 public class TopUp {
     private String referenceId;
     private int coinQty;
-    private boolean topUpResult;
+    private boolean topUpResult = false;
     private Date updateTime;
+    private boolean isDeviceReplied = false;
 
     public TopUp() {
         this.updateTime = new Date();
@@ -56,4 +57,13 @@ public class TopUp {
     public void setCoinQty(int coinQty) {
         this.coinQty = coinQty;
     }
+
+    public boolean isDeviceReplied() {
+        return isDeviceReplied;
+    }
+
+    public void setDeviceReplied(boolean isDeviceReplied) {
+        this.isDeviceReplied = isDeviceReplied;
+    }
+
 }

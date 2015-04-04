@@ -54,8 +54,8 @@ public class MessageUtil {
 
     public static boolean waitForResponse(HttpJsonHandler handler, int timeoutInSecond) {
 
-
         if (null != handler && timeoutInSecond > 0) {
+            long start = System.currentTimeMillis();
             boolean isExpired = false;
             Date expiredTime = getExpireTime(handler.getUpdateTime(), timeoutInSecond);
             while (!handler.await()) {
@@ -64,6 +64,9 @@ public class MessageUtil {
                     break;
                 }
             }
+            long end = System.currentTimeMillis();
+            logger.info("Waiting {} response elapse {} ms", handler.getClass().getSimpleName(), end - start);
+
             if (!isExpired) {
                 logger.info("Received response at {} {}", handler.getUpdateTime(), handler.getUpdateTime().getTime());
             } else {
@@ -76,7 +79,7 @@ public class MessageUtil {
         }
     }
 
-    public static boolean isKeeyWaiting(Date requestTime, Date targetTime) {
+    public static boolean isKeepWaiting(Date requestTime, Date targetTime) {
         return !requestTime.before(targetTime);
     }
 }
