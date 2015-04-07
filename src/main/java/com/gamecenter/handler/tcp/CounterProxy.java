@@ -3,6 +3,7 @@ package com.gamecenter.handler.tcp;
 import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.TopUp;
+import com.gamecenter.utils.MessageUtil;
 import org.apache.mina.core.future.IoFuture;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;

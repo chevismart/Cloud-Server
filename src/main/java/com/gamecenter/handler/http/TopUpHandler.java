@@ -58,7 +58,7 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
                     // Raise a topup request by counter proxy and add one record in the topup history.
                     counterProxy.topUpCoins(deviceInfo, coinQty, refId, requestTime);
                 } else {
-                    logger.warn("Reference [{}] topup request is requested and under processing, waiting for the response.");
+                    logger.warn("Reference [{}] topup request is requested and under processing, waiting for the response.", refId);
                 }
                 topUp = deviceInfo.getTopUpHistory().get(refId);
                 waitForResponse(this, MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND);

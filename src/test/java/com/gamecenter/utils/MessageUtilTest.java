@@ -12,13 +12,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class MessageUtilTest {
     CounterProxy counterProxy = mock(CounterProxy.class);
     TopUpHandler handler = new TopUpHandler(counterProxy);
     TopUp topup;
-    int timeoutInSec = 2;
+    int timeoutInSec = 5;
     private Date now = new Date();
 
     @Before
@@ -37,24 +39,25 @@ public class MessageUtilTest {
             @Override
             public void run() {
                 System.err.println("Wait for response start");
-                MessageUtil.waitForResponse(handler, timeoutInSec);
+                boolean result = MessageUtil.waitForResponse(handler, timeoutInSec);
+                assertThat(result, is(true));
             }
         });
 
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                System.err.println("Start waiting");
+                System.err.println("Start waiting: " + new Date().getTime());
                 try {
-                    Thread.sleep(timeoutInSec * 1000);
+                    Thread.sleep(4 * 1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                System.err.println("Stop waiting");
+                System.err.println("Stop waiting: " + new Date().getTime());
                 topup.setUpdateTime(new Date());
             }
         });
-        Thread.sleep(timeoutInSec * 10000);
+        Thread.sleep(10 * 1000);
 
     }
 }
