@@ -3,7 +3,6 @@ package com.gamecenter.handler.tcp;
 import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.TopUp;
-import com.gamecenter.utils.MessageUtil;
 import org.apache.mina.core.future.IoFuture;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;
@@ -34,7 +33,7 @@ public class CounterProxy extends DeviceProxy {
         logger.info("Message({}) sent: {}", ByteArrayUtil.toHexString(request.build()), request.toString());
     }
 
-    public void topUpCoins(DeviceInfo deviceInfo, int coinQty, String referenceId, Date time) {
+    public void topUpCoins(DeviceInfo deviceInfo, int coinQty, String referenceId, final Date time) {
         TopUpRequest request = new TopUpRequest();
         MessageHeader header = deviceInfo.getHeaderWithMessageNumIncreasment();
         header.setMsgType(MessageType.TopUpRequest);
@@ -43,11 +42,10 @@ public class CounterProxy extends DeviceProxy {
         request.setReferenceId(referenceId);
         request.setTopUpQuantity(coinQty);
 
-        TopUp topUp = new TopUp();
+        TopUp topUp = new TopUp(time);
         topUp.setReferenceId(request.getReferenceId());
         topUp.setCoinQty(request.getTopUpQuantity());
         topUp.setTopUpResult(false);
-        topUp.setUpdateTime(time);
 
         deviceInfo.getTopUpHistory().put(request.getReferenceId(), topUp);
 

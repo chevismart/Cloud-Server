@@ -113,7 +113,7 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
             logger.info("Remove topup history {} success!",
                     deviceInfo.getTopUpHistory().containsKey(referenceId) ? "is NOT" : "is");
         } else {
-            logger.warn("Remove topup request record with reference Id [{}] failed and may since not yet replied or such topup history is not found!");
+            logger.warn("Remove topup request record with reference Id [{}] failed and may since not yet replied or such topup history is not found!", referenceId);
         }
     }
 }

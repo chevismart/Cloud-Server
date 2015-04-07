@@ -57,8 +57,8 @@ public class MessageUtil {
         if (null != handler && timeoutInSecond > 0) {
             long start = System.currentTimeMillis();
             boolean isExpired = false;
-            Date expiredTime = getExpireTime(handler.getUpdateTime(), timeoutInSecond);
-            while (!handler.await()) {
+            Date expiredTime = getExpireTime(handler.getRequestTime(), timeoutInSecond);
+            while (handler.await()) {
                 if (!handler.getRequestTime().before(expiredTime)) {
                     isExpired = true;
                     break;

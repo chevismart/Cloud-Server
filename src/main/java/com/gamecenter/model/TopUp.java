@@ -12,8 +12,8 @@ public class TopUp {
     private Date updateTime;
     private boolean isDeviceReplied = false;
 
-    public TopUp() {
-        this.updateTime = new Date();
+    public TopUp(Date datetime) {
+        this.updateTime = datetime;
     }
 
     @Override
