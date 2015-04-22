@@ -13,24 +13,11 @@ import java.util.Map;
 public class HttpResponseMessage {
     /** HTTP response codes */
     public static final int HTTP_STATUS_SUCCESS = 200;
-
-    @Override
-    public String toString() {
-        return "HttpResponseMessage{" +
-                "headers=" + headers +
-                ", body=" + body +
-                ", responseCode=" + responseCode +
-                '}';
-    }
-
     public static final int HTTP_STATUS_NOT_FOUND = 404;
-
     /** Map<String, String> */
     private final Map<String, String> headers = new HashMap<String, String>();
-
     /** Storage for body of HTTP response. */
     private final ByteArrayOutputStream body = new ByteArrayOutputStream(1024);
-
     private int responseCode = HTTP_STATUS_SUCCESS;
 
     public HttpResponseMessage() {
@@ -46,6 +33,15 @@ public class HttpResponseMessage {
                 "EEE, dd MMM yyyy HH:mm:ss zzz").format(new Date()));
     }
 
+    @Override
+    public String toString() {
+        return "HttpResponseMessage{" +
+                "headers=" + headers +
+                ", body=" + body +
+                ", responseCode=" + responseCode +
+                '}';
+    }
+
     public Map<String, String> getHeaders() {
         return headers;
     }
@@ -54,12 +50,12 @@ public class HttpResponseMessage {
         headers.put("Content-Type", contentType);
     }
 
-    public void setResponseCode(int responseCode) {
-        this.responseCode = responseCode;
-    }
-
     public int getResponseCode() {
         return this.responseCode;
+    }
+
+    public void setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
     }
 
     public void appendBody(byte[] b) {
@@ -93,8 +89,6 @@ public class HttpResponseMessage {
             this.setContentType("application/json");
 
             StringBuilder sb = new StringBuilder();
-
-            sb.append("HTTP/1.1\r\n");
 
             for(Map.Entry entry: headers.entrySet()){
                 sb.append(entry.getKey())
