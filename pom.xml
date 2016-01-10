@@ -113,7 +113,7 @@
         <dependency>
             <groupId>com.gamecenter</groupId>
             <artifactId>message-serializer</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.mina</groupId>
