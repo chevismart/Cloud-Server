@@ -51,23 +51,27 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
 
             String refId = request.getParameter(ServerConstants.JsonConst.TOP_UP_REFERENCE_ID);
             int coinQty = Integer.valueOf(request.getParameter(ServerConstants.JsonConst.TOP_UP_COIN_QTY));
-            try {
-                if (!isRefIdProcessing(refId)) {
-                    requestTime = new Date();
-                    logger.info("Top up time is {}", requestTime);
-                    // Raise a topup request by counter proxy and add one record in the topup history.
-                    counterProxy.topUpCoins(deviceInfo, coinQty, refId, requestTime);
-                } else {
-                    logger.warn("Reference [{}] topup request is requested and under processing, waiting for the response.");
-                }
-                topUp = deviceInfo.getTopUpHistory().get(refId);
-                waitForResponse(this, MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND);
-                respMap = getTopUpResultMap(topUp.isTopUpResult());
-                removeRepliedRecord();
-            } catch (Exception e) {
-                logger.error("Topup failed since: {}", e.getMessage());
-            }
 
+            if (!isPefIdProcessed(refId)) {
+                try {
+                    if (!isRefIdRecorded(refId)) {
+                        requestTime = new Date();
+                        logger.info("Top up time is {}", requestTime);
+                        // Raise a topup request by counter proxy and add one record in the topup history.
+                        counterProxy.topUpCoins(deviceInfo, coinQty, refId, requestTime);
+                    } else {
+                        logger.warn("Reference [{}] topup request is requested and under processing, waiting for the response.", refId);
+                    }
+                    topUp = deviceInfo.getTopUpHistory().get(refId);
+                    waitForResponse(this, MessageUtil.TCP_MESSAGE_TIMEOUT_IN_SECOND);
+                    respMap = getTopUpResultMap(topUp.isTopUpResult());
+//                    removeRepliedRecord();
+                } catch (Exception e) {
+                    logger.error("Topup failed since: {}", e.getMessage());
+                }
+            } else {
+                logger.warn("Reference Id {} has been processed, request aborted!", refId);
+            }
 
         } else {
             logger.warn("Device {} not found!", mac);
@@ -78,8 +82,12 @@ public class TopUpHandler extends HttpServerHandler implements HttpJsonHandler {
         return response;
     }
 
-    private boolean isRefIdProcessing(String refId) {
+    private boolean isRefIdRecorded(String refId) {
         return deviceInfo.getTopUpHistory().containsKey(refId);
+    }
+
+    private boolean isPefIdProcessed(String refId) {
+        return isRefIdRecorded(refId) ? deviceInfo.getTopUpHistory().get(refId).isDeviceReplied() : false;
     }
 
     private Map<String, String> getTopUpResultMap(boolean topUpResult) {
