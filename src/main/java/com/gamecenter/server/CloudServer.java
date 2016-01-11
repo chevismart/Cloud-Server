@@ -1,5 +1,6 @@
 package com.gamecenter.server;
 
+import com.gamecenter.handler.HttpServerHandler;
 import com.gamecenter.server.http.MinaHttpServer;
 import com.gamecenter.server.tcp.MinaLongConnServer;
 
@@ -14,7 +15,7 @@ public class CloudServer {
     public static void main(String[] arg) throws IOException {
         MinaLongConnServer server = new MinaLongConnServer();
         server.start();
-        MinaHttpServer httpServer = new MinaHttpServer();
+        MinaHttpServer httpServer = new MinaHttpServer(new HttpServerHandler(),8003);
         httpServer.start();
     }
 }

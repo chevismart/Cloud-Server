@@ -23,6 +23,8 @@ public class MinaHttpServer implements Server {
     private boolean isRunning;
     private String encoding;
     private HttpJsonHandler httpJsonHandler;
+    private HttpServerHandler httpServerHandler;
+    private int port;
 
     public static void main(String[] args) {
         int port = DEFAULT_PORT;
@@ -52,6 +54,11 @@ public class MinaHttpServer implements Server {
         }
     }
 
+    public MinaHttpServer(HttpServerHandler httpServerHandler, int port) {
+        this.httpServerHandler = httpServerHandler;
+        this.port = port;
+    }
+
     @Override
     public void start() {
         int port = DEFAULT_PORT;
@@ -66,10 +73,10 @@ public class MinaHttpServer implements Server {
                     new ProtocolCodecFilter(
                             new HttpServerProtocolCodecFactory()));
             acceptor.getFilterChain().addLast("logger", new LoggingFilter());
-            acceptor.setHandler(new HttpServerHandler());
-            acceptor.bind(new InetSocketAddress(port));
+            acceptor.setHandler(httpServerHandler);
+            acceptor.bind(new InetSocketAddress(getPort()));
 
-            System.out.println("Http Server now listening on port " + port);
+            System.out.println("Http Server now listening on port " + getPort());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -116,6 +123,10 @@ public class MinaHttpServer implements Server {
             isRunning = true;
             System.out.println("Server now listening on port " + port);
         }
+    }
+
+    public int getPort() {
+        return port>0? port:DEFAULT_PORT;
     }
 
     /**
