@@ -2,10 +2,7 @@ package com.gamecenter.model;
 
 import java.util.Date;
 
-/**
- * Created by Chevis on 14-10-3.
- */
-public class TopUp {
+public class TopUp implements Model {
     private String referenceId;
     private int coinQty;
     private boolean topUpResult = false;

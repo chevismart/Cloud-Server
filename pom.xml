@@ -6,7 +6,7 @@
 
     <groupId>com.gamecenter</groupId>
     <artifactId>cloud-server</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
 
     <build>
         <!--<finalName>...</finalName>-->
@@ -15,6 +15,12 @@
             <!-- 控制资源文件的拷贝 -->
             <resource>
                 <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.xml</include>
+                    <include>**/*.tld</include>
+                </includes>
+                <!--<filtering>false</filtering>-->
                 <targetPath>${project.build.directory}</targetPath>
             </resource>
         </resources>
@@ -25,10 +31,15 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <defaultLibBundleDir>lib</defaultLibBundleDir>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
             </plugin>
             <!-- 打包jar文件时，配置manifest文件，加入lib包的jar依赖 -->
             <plugin>
@@ -43,6 +54,28 @@
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId> maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.gamecenter.server.CloudServer</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <!-- 拷贝依赖的jar包到lib目录 -->
             <plugin>
@@ -95,10 +128,14 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.1</version>
+        </dependency>
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -118,6 +155,11 @@
         <dependency>
             <groupId>org.apache.mina</groupId>
             <artifactId>mina-core</artifactId>
+            <version>2.0.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.mina</groupId>
+            <artifactId>mina-http</artifactId>
             <version>2.0.7</version>
         </dependency>
         <dependency>
@@ -149,6 +191,27 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>2.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.1.15</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpasyncclient-cache</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <!-- Google guava util-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
         </dependency>
         <!--<dependency>-->
         <!--<groupId>net.sf.json-lib</groupId>-->

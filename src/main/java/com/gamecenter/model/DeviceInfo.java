@@ -4,21 +4,24 @@ import org.apache.mina.core.session.IoSession;
 import org.gamecenter.serializer.messages.MessageHeader;
 import org.gamecenter.serializer.utils.ByteUtil;
 
+import java.awt.peer.MouseInfoPeer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by Chevis on 14-9-19.
  */
-public class DeviceInfo {
+public class DeviceInfo implements Model {
 
     private IoSession session;
     private MessageHeader messageHeader;
     private Counter counter;
     private Map<String, TopUp> topUpHistory; // referenceId : topup
     private Power power;
+    private final String mac;
 
-    public DeviceInfo() {
+    public DeviceInfo(String mac) {
+        this.mac = mac;
         this.topUpHistory = new ConcurrentHashMap<String, TopUp>();
         this.counter = new Counter();
         this.power = new Power();
@@ -110,4 +113,7 @@ public class DeviceInfo {
         return messageHeader;
     }
 
+    public String getMac() {
+        return mac;
+    }
 }

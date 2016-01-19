@@ -1,16 +1,12 @@
 package com.gamecenter.utils;
 
 import com.gamecenter.constants.ServerConstants;
-import com.gamecenter.handler.HttpJsonHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 
-/**
- * Created by Chevis on 14-10-2.
- */
 public class MessageUtil {
 
     public static int TCP_MESSAGE_TIMEOUT_IN_SECOND = 5;
@@ -43,43 +39,5 @@ public class MessageUtil {
 
     public static String isPowerOn(boolean isPowerOn) {
         return isPowerOn ? ServerConstants.POWER_ON : ServerConstants.POWER_OFF;
-    }
-
-    public static Date getExpireTime(Date now, int timeoutInSecond) {
-        int delayTime = timeoutInSecond;
-        long nowTime = now.getTime();
-        long expiryTime = nowTime + delayTime * 1000L;
-        return new Date(expiryTime);
-    }
-
-    public static boolean waitForResponse(HttpJsonHandler handler, int timeoutInSecond) {
-
-        if (null != handler && timeoutInSecond > 0) {
-            long start = System.currentTimeMillis();
-            boolean isExpired = false;
-            Date expiredTime = getExpireTime(handler.getRequestTime(), timeoutInSecond);
-            while (handler.await()) {
-                if (!handler.getRequestTime().before(expiredTime)) {
-                    isExpired = true;
-                    break;
-                }
-            }
-            long end = System.currentTimeMillis();
-            logger.info("Waiting {} response elapse {} ms", handler.getClass().getSimpleName(), end - start);
-
-            if (!isExpired) {
-                logger.info("Received response at {} {}", handler.getUpdateTime(), handler.getUpdateTime().getTime());
-            } else {
-                logger.warn("Request Timeout!");
-            }
-            return !isExpired;
-        } else {
-            logger.error("Invalid parameters! Start time = {}, targetTime = {}, timeout = {}", handler.getUpdateTime(), handler.getRequestTime(), timeoutInSecond);
-            return false;
-        }
-    }
-
-    public static boolean isKeepWaiting(Date requestTime, Date targetTime) {
-        return !requestTime.before(targetTime);
     }
 }

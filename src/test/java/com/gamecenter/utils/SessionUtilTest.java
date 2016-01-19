@@ -12,6 +12,8 @@ import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -37,7 +39,6 @@ public class SessionUtilTest {
 
     @Test
     public void getSessionMapByMacAddressInString() throws Exception {
-
         HashMap<String, DeviceInfo> map = (HashMap<String, DeviceInfo>) SessionUtil.getDeviceInfoByMacAddress(macInString);
         assertNotNull(map);
         assertEquals(mockSessionMap.size(), map.size());
@@ -92,6 +93,22 @@ public class SessionUtilTest {
     public void createSessionKeyWithCenterIdAndMacAddressSuccessfully() throws Exception {
         String expectResult = centerIdInString + macInString;
         assertEquals(expectResult, SessionUtil.createSessionKey(centerIdInByte, macInByte));
+    }
+
+    @Test
+    public void sessionCouldBeRemoved() throws Exception {
+        Initialization.getInstance().getClientMap().clear();
+        DeviceInfo deviceInfo = mock(DeviceInfo.class);
+        IoSession ioSession = mock(IoSession.class);
+        IoSession onLineSession = mock(IoSession.class);
+        when(deviceInfo.getSession()).thenReturn(ioSession);
+        DeviceInfo onlineDevice = mock(DeviceInfo.class);
+        when(onlineDevice.getSession()).thenReturn(onLineSession);
+        Initialization.getInstance().getClientMap().put("1", deviceInfo);
+        Initialization.getInstance().getClientMap().put("2", onlineDevice);
+        SessionUtil.removeSession(ioSession);
+        assertThat(Initialization.getInstance().getClientMap().size(), is(1));
+        assertThat(Initialization.getInstance().getClientMap().get("2"), is(onlineDevice));
     }
 
     @Test

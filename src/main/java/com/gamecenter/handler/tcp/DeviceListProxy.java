@@ -2,7 +2,6 @@ package com.gamecenter.handler.tcp;
 
 import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.utils.SessionUtil;
-import org.apache.mina.core.future.IoFuture;
 import org.apache.mina.core.session.IoSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,12 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Chevis on 14-9-19.
- */
-public class DeviceListProxy extends DeviceProxy {
+public class DeviceListProxy {
 
-    Logger logger = LoggerFactory.getLogger(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private Map<String, List<IoSession>> onlineDevicesMap;
 
@@ -60,10 +56,5 @@ public class DeviceListProxy extends DeviceProxy {
         }
 
         return macList;
-    }
-
-    @Override
-    IoFuture execute(byte[] message, IoSession ioSession) {
-        return null;
     }
 }

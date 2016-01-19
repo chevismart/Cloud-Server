@@ -1,99 +1,82 @@
 package com.gamecenter.handler.tcp;
 
-import ch.qos.logback.core.encoder.ByteArrayUtil;
+import com.gamecenter.handler.queue.QueueEntry;
 import com.gamecenter.model.DeviceInfo;
+import com.gamecenter.model.Model;
 import com.gamecenter.model.TopUp;
 import com.gamecenter.utils.MessageUtil;
-import org.apache.mina.core.future.IoFuture;
-import org.apache.mina.core.future.WriteFuture;
-import org.apache.mina.core.session.IoSession;
-import org.gamecenter.serializer.constants.MessageType;
 import org.gamecenter.serializer.messages.MessageHeader;
 import org.gamecenter.serializer.messages.downStream.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
+import java.util.concurrent.TimeoutException;
 
-/**
- * Created by Chevis on 14-9-19.
- */
+import static org.gamecenter.serializer.constants.MessageType.*;
+
 public class CounterProxy extends DeviceProxy {
 
-    Logger logger = LoggerFactory.getLogger(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Executor executor;
 
-    public void switchCounter(DeviceInfo deviceInfo, boolean isPowerOn) {
-        CounterSwitchRequest request = new CounterSwitchRequest();
-        MessageHeader header = deviceInfo.getHeaderWithMessageNumIncreasment();
-        header.setMsgType(MessageType.CounterSwitchRequest);
-        request.setHeader(header);
-
-        request.setSwitcher(MessageUtil.isEnable(isPowerOn));
-
-        execute(request.build(), deviceInfo.getSession());
-        logger.info("Message({}) sent: {}", ByteArrayUtil.toHexString(request.build()), request.toString());
+    public CounterProxy(Executor executor) {
+        this.executor = executor;
     }
 
-    public void topUpCoins(DeviceInfo deviceInfo, int coinQty, String referenceId, final Date time) {
+    public QueueEntry<Model> switchCounter(DeviceInfo deviceInfo, boolean isPowerOn) {
+        CounterSwitchRequest request = new CounterSwitchRequest();
+        MessageHeader header = deviceInfo.getHeaderWithMessageNumIncreasment();
+        header.setMsgType(CounterSwitchRequest);
+        request.setHeader(header);
+        request.setSwitcher(MessageUtil.isEnable(isPowerOn));
+        return executor.execute(request.build(), CounterSwitchRequest, deviceInfo);
+    }
+
+    public QueueEntry<Model> topUpCoins(DeviceInfo deviceInfo, int coinQty, String referenceId) {
         TopUpRequest request = new TopUpRequest();
         MessageHeader header = deviceInfo.getHeaderWithMessageNumIncreasment();
-        header.setMsgType(MessageType.TopUpRequest);
+        header.setMsgType(TopUpRequest);
         request.setHeader(header);
 
         request.setReferenceId(referenceId);
         request.setTopUpQuantity(coinQty);
 
-        TopUp topUp = new TopUp(time);
+        TopUp topUp = new TopUp(new Date());
         topUp.setReferenceId(request.getReferenceId());
         topUp.setCoinQty(request.getTopUpQuantity());
         topUp.setTopUpResult(false);
 
         deviceInfo.getTopUpHistory().put(request.getReferenceId(), topUp);
-
-        WriteFuture future = (WriteFuture) execute(request.build(), deviceInfo.getSession());
-        logger.info("Message({}) sent: {}", ByteArrayUtil.toHexString(request.build()), request.toString());
+        return executor.execute(request.build(), TopUpRequest, deviceInfo);
     }
 
-    public void resetCounter(boolean resetCoin, boolean resetPrize, DeviceInfo deviceInfo) {
+    public QueueEntry<Model> resetCounter(boolean resetCoin, boolean resetPrize, DeviceInfo deviceInfo) {
         ResetCounterRequest request = new ResetCounterRequest();
         MessageHeader header = deviceInfo.getHeaderWithMessageNumIncreasment();
-        header.setMsgType(MessageType.ResetCounterRequest);
+        header.setMsgType(ResetCounterRequest);
         request.setHeader(header);
-
         request.setResetCoin(MessageUtil.isEnable(resetCoin));
         request.setResetPrize(MessageUtil.isEnable(resetPrize));
-
-        execute(request.build(), deviceInfo.getSession());
-        logger.info("Message({}) sent: {}", ByteArrayUtil.toHexString(request.build()), request.toString());
+        return executor.execute(request.build(), ResetCounterRequest, deviceInfo);
     }
 
-    public void refreshCounterStatus(DeviceInfo deviceInfo) {
+    public QueueEntry<Model> refreshCounterStatus(DeviceInfo deviceInfo) {
         CounterStatusRequest request = new CounterStatusRequest();
         MessageHeader header = deviceInfo.getHeaderWithMessageNumIncreasment();
-        header.setMsgType(MessageType.CounterStatusRequest);
+        header.setMsgType(CounterStatusRequest);
         request.setHeader(header);
-
-        execute(request.build(), deviceInfo.getSession());
-        logger.info("Message({}) sent: {}", ByteArrayUtil.toHexString(request.build()), request.toString());
+        return executor.execute(request.build(), CounterStatusRequest, deviceInfo);
     }
 
 
-    public void refreshCounterQty(boolean queryCoin, boolean queryPrize, DeviceInfo deviceInfo) {
+    public QueueEntry<Model> refreshCounterQty(boolean queryCoin, boolean queryPrize, DeviceInfo deviceInfo) throws TimeoutException {
         CounterRequest request = new CounterRequest();
         MessageHeader header = deviceInfo.getHeaderWithMessageNumIncreasment();
-        header.setMsgType(MessageType.CounterRequest);
+        header.setMsgType(CounterRequest);
         request.setHeader(header);
         request.setReqCoin(MessageUtil.isEnable(queryCoin));
         request.setReqPrize(MessageUtil.isEnable(queryPrize));
-        execute(request.build(), deviceInfo.getSession());
-        logger.info("Message({}) sent: {}", ByteArrayUtil.toHexString(request.build()), request.toString());
-    }
-
-    @Override
-    synchronized IoFuture execute(byte[] message, IoSession ioSession) {
-
-        WriteFuture writeFuture = ioSession.write(message);
-
-        return writeFuture;
+        return executor.execute(request.build(), CounterRequest, deviceInfo);
     }
 }

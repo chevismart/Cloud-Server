@@ -1,6 +1,7 @@
 package com.gamecenter.handler.tcp;
 
 import com.gamecenter.handler.TcpHandler;
+import com.gamecenter.handler.queue.Queues;
 import com.gamecenter.model.Counter;
 import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.utils.MessageUtil;
@@ -13,12 +14,16 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Date;
 
-/**
- * Created by Boss on 2014/9/16.
- */
+import static org.gamecenter.serializer.constants.MessageType.ResetCounterRequest;
+
 public class CounterResetHandler implements TcpHandler {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Queues queues;
+
+    public CounterResetHandler(Queues queues) {
+        this.queues = queues;
+    }
 
     @Override
     public byte[] handle(byte[] resp, IoSession session) throws IllegalAccessException, NoSuchFieldException, IOException {
@@ -34,7 +39,7 @@ public class CounterResetHandler implements TcpHandler {
         if (MessageUtil.isSuccess(response.getResetPrizeResult())) counter.setLastPrizeResetTime(new Date());
 
         deviceInfo.setMessageHeader(response.getHeader());
-
+        queues.consume(ResetCounterRequest, deviceInfo.getMac(), counter);
         return null;
     }
 }

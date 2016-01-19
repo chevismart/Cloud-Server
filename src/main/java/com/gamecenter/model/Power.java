@@ -2,10 +2,7 @@ package com.gamecenter.model;
 
 import java.util.Date;
 
-/**
- * Created by Chevis on 14-10-3.
- */
-public class Power {
+public class Power implements Model{
 
     private boolean status;
     private Date updateTime;

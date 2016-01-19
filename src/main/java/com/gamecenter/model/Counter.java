@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Created by Chevis on 14-10-2.
  */
-public class Counter {
+public class Counter implements Model{
 
     private boolean isCoinOn;
     private boolean isPrizeOn;

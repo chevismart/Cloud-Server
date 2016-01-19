@@ -1,0 +1,4 @@
+http://wawaonline.net:8003/counterRecord?MAC=accf233b95f6&COIN_QTY=true&PRIZE_QTY=true
+http://wawaonline.net:8003/topup?MAC=accf233b95f6&TOP_UP_REFERENCE_ID=ABCDEF1234&TOP_UP_COIN_QTY=1
+http://wawaonline.net:8003/counterStatus?MAC=accf233b95f6
+http://wawaonline.net:8003/counterSwitch?MAC=accf233b95f6&COUNTER_SWITCH=true

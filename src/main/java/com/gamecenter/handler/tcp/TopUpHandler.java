@@ -1,6 +1,7 @@
 package com.gamecenter.handler.tcp;
 
 import com.gamecenter.handler.TcpHandler;
+import com.gamecenter.handler.queue.Queues;
 import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.TopUp;
 import com.gamecenter.utils.MessageUtil;
@@ -14,12 +15,16 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
-/**
- * Created by Boss on 2014/9/16.
- */
+import static org.gamecenter.serializer.constants.MessageType.TopUpRequest;
+
 public class TopUpHandler implements TcpHandler {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Queues queues;
+
+    public TopUpHandler(Queues queues) {
+        this.queues = queues;
+    }
 
     @Override
     public byte[] handle(byte[] resp, IoSession session) throws IllegalAccessException, NoSuchFieldException, IOException {
@@ -27,22 +32,30 @@ public class TopUpHandler implements TcpHandler {
         TopUpResponse response = new TopUpResponse();
         response.parse(resp);
 
-        logger.info("Reference No is {}, result is {}", response.getReferenceId(), response.getTopUpResult());
+        logger.info("Reference No. is {}, result is {}", response.getReferenceId(), response.getTopUpResult());
 
         DeviceInfo deviceInfo = SessionUtil.getDeviceInfoByIoSession(session);
 
-        Map<String, TopUp> topUpHistory = deviceInfo.getTopUpHistory();
+        if (deviceInfo != null) {
+            Map<String, TopUp> topUpHistory = deviceInfo.getTopUpHistory();
+            if (topUpHistory != null) {
+                TopUp topUp = topUpHistory.get(response.getReferenceId());
+                if (topUp != null) {
+                    topUp.setTopUpResult(MessageUtil.isSuccess(response.getTopUpResult()));
+                    topUp.setUpdateTime(new Date());
+                    topUp.setDeviceReplied(true);
 
-        TopUp topUp = topUpHistory.get(response.getReferenceId());
-        if (topUp != null) {
-            topUp.setTopUpResult(MessageUtil.isSuccess(response.getTopUpResult()));
-            topUp.setUpdateTime(new Date());
-            topUp.setDeviceReplied(true);
-
-            logger.info("Handle top up for {} successfully: {}", topUp.getReferenceId(), topUp);
-        } else {
-            logger.warn("Top up history is not found!");
+                    queues.consume(TopUpRequest, deviceInfo.getMac(), topUp);
+                    logger.info("Handle top up for {} successfully: {}", topUp.getReferenceId(), topUp);
+                    topUpHistory.remove(response.getReferenceId());
+                } else {
+                    logger.warn("Top up history not found for refId: [{}]", response.getReferenceId());
+                }
+            } else {
+                logger.warn("Top up history is not found!");
+            }
         }
+
         return null;
     }
 }

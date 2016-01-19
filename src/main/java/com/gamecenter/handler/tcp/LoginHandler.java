@@ -3,10 +3,8 @@ package com.gamecenter.handler.tcp;
 import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.gamecenter.handler.TcpHandler;
 import com.gamecenter.model.DeviceInfo;
-import com.gamecenter.model.Initialization;
 import com.gamecenter.utils.SessionUtil;
 import org.apache.mina.core.session.IoSession;
-import org.gamecenter.serializer.constants.MessageType;
 import org.gamecenter.serializer.messages.MessageHeader;
 import org.gamecenter.serializer.messages.downStream.LoginResponse;
 import org.gamecenter.serializer.messages.upStream.LoginRequest;
@@ -16,9 +14,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.HashMap;
 
-/**
- * Created by Chevis on 14-9-10.
- */
+import static com.gamecenter.model.Initialization.getInstance;
+import static org.gamecenter.serializer.constants.MessageType.LoginResponse;
+
 public class LoginHandler implements TcpHandler {
 
     Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -29,14 +27,14 @@ public class LoginHandler implements TcpHandler {
         LoginRequest request = new LoginRequest();
         request.parse(requestByte);
 
-        HashMap<String, DeviceInfo> deviceSessionMap = Initialization.getInstance().getClientMap();
+        HashMap<String, DeviceInfo> deviceSessionMap = getInstance().getClientMap();
 
         byte[] mac = request.getMac();
         if (null != mac && mac.length != 0) {
             // Store the session with the new created session key
-            String sessionKey = SessionUtil.createSessionKey(request.getCenterId(), request.getMac());
+            String sessionKey = SessionUtil.createSessionKey(request.getCenterId(), mac);
 
-            DeviceInfo deviceInfo = new DeviceInfo();
+            DeviceInfo deviceInfo = new DeviceInfo(ByteArrayUtil.toHexString(mac));
             deviceInfo.setSession(session);
             deviceInfo.setMessageHeader(request.getHeader());
 
@@ -45,7 +43,7 @@ public class LoginHandler implements TcpHandler {
             LoginResponse response = new LoginResponse();
 
             MessageHeader header = request.getHeader();
-            header.setMsgType(MessageType.LoginResponse);
+            header.setMsgType(LoginResponse);
             response.setHeader(header);
 
             logger.info("Login successfully for {}", ByteArrayUtil.toHexString(mac));

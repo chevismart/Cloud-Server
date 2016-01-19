@@ -2,10 +2,7 @@ package com.gamecenter.model;
 
 import java.util.HashMap;
 
-/**
- * Created by Boss on 2014/8/6.
- */
-public class Initialization {
+public class Initialization implements Model {
 
     private static HashMap<String, DeviceInfo> sessionHashMap;
 

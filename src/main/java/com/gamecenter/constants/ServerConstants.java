@@ -1,8 +1,5 @@
 package com.gamecenter.constants;
 
-/**
- * Created by Chevis on 14-9-7.
- */
 public class ServerConstants {
     public final static String STATUS_ON = "Y";
     public final static String STATUS_OFF = "N";
@@ -30,6 +27,7 @@ public class ServerConstants {
         public final static String PRIZE_RESET = "COIN_RESET";
         public final static String PRIZE_RESET_TIMESTAMP = "PRIZE_RESET_TIMESTAMP";
         public final static String TOP_UP_REFERENCE_ID = "TOP_UP_REFERENCE_ID";
+        public final static String USER_ID = "USER_ID";
         public final static String TOP_UP_COIN_QTY = "TOP_UP_COIN_QTY";
         public final static String TOP_UP_RESULT = "TOP_UP_RESULT";
         public final static String TOP_UP_RESULT_TIMESTAMP = "TOP_UP_RESULT_TIMESTAMP";

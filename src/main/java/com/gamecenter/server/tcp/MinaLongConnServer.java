@@ -2,6 +2,7 @@ package com.gamecenter.server.tcp;
 
 import com.gamecenter.filter.tcp.CodecFactory;
 import com.gamecenter.handler.MinaTcpLongConnServerHandler;
+import com.gamecenter.handler.queue.Queues;
 import com.gamecenter.server.Server;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.session.IdleStatus;
@@ -17,6 +18,11 @@ import java.net.InetSocketAddress;
  */
 public class MinaLongConnServer implements Server {
     private static final int PORT = 8002;
+    private final Queues queues;
+
+    public MinaLongConnServer(Queues queues) {
+        this.queues = queues;
+    }
 
     @Override
     public void start() {
@@ -30,7 +36,7 @@ public class MinaLongConnServer implements Server {
 //        ProtocolCodecFilter tcp= new ProtocolCodecFilter(new ObjectSerializationCodecFactory());
 //        acceptor.getFilterChain().addLast("objectFilter", tcp);
 
-            acceptor.setHandler(new MinaTcpLongConnServerHandler());
+            acceptor.setHandler(new MinaTcpLongConnServerHandler(queues));
 
             acceptor.getSessionConfig().setReadBufferSize(2048);
             acceptor.bind(new InetSocketAddress(PORT));

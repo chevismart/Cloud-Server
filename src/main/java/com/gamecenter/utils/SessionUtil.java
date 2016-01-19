@@ -9,9 +9,6 @@ import org.apache.mina.core.session.IoSession;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by Chevis on 14-9-10.
- */
 public class SessionUtil {
 
     private static MacFinder macFinder = new MacFinder();
@@ -21,7 +18,7 @@ public class SessionUtil {
         Map<String, DeviceInfo> deviceInfoMap = Initialization.getInstance().getClientMap();
         for (Map.Entry<String, DeviceInfo> deviceInfo : deviceInfoMap.entrySet()) {
             if (deviceInfo.getValue().getSession().equals(ioSession)) {
-                deviceInfoMap.remove(deviceInfo);
+                deviceInfoMap.remove(deviceInfo.getKey());
                 return true;
             }
         }

@@ -1,6 +1,7 @@
 package com.gamecenter.handler;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
+import com.gamecenter.handler.queue.Queues;
 import com.gamecenter.handler.tcp.*;
 import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.Initialization;
@@ -23,9 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Boss on 2014/8/6.
- */
+import static com.gamecenter.model.Initialization.getInstance;
+
 public class MinaTcpLongConnServerHandler implements IoHandler {
 
     private final Logger logger = (Logger) LoggerFactory.getLogger(getClass());
@@ -41,22 +41,24 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
     //temp
     private String switcher = "I";
     private int counterIndex = 0;
+    private final Queues queues;
 
-    public MinaTcpLongConnServerHandler() {
+    public MinaTcpLongConnServerHandler(Queues queues) {
+        this.queues = queues;
         this.authorizedSession = new ArrayList<String>();
         loginHandler = new LoginHandler();
         heartbeatHandler = new HeartbeatHandler();
-        powerControlHandler = new PowerControlHandler();
-        topUpHandler = new TopUpHandler();
-        counterHandler = new CounterHandler();
-        counterResetHandler = new CounterResetHandler();
+        powerControlHandler = new PowerControlHandler(queues);
+        topUpHandler = new TopUpHandler(this.queues);
+        counterHandler = new CounterHandler(this.queues);
+        counterResetHandler = new CounterResetHandler(queues);
         runtimeHandler = new RuntimeHandler();
-        counterStatusHandler = new CounterStatusHandler();
+        counterStatusHandler = new CounterStatusHandler(queues);
     }
 
     @Override
     public void sessionCreated(IoSession ioSession) throws Exception {
-        logger.info("Session is created");
+        logger.info("Session is created [{}]", ioSession.getId());
     }
 
     @Override
@@ -68,13 +70,12 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
         String clientIp = remoteAddress.getAddress().getHostAddress();
 
         logger.info("LongConnect Server opened Session ID =" + String.valueOf(session.getId()));
-
-        logger.info("接收来自客户端 :" + clientIp + "的连接.");
-
-//        Initialization init = Initialization.getInstance();
+//
+//        logger.info("接收来自客户端 :" + clientIp + "的连接.");
+//
+//        HashMap<String, DeviceInfo> clientMap = getInstance().getClientMap();
 //
 //
-//        HashMap<String, DeviceInfo> clientMap = init.getClientMap();
 //
 //        clientMap.put(clientIp, session);
 
@@ -94,9 +95,6 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
 
         logger.info("Message received in the long connect server...");
 
-
-        //////////////////////////
-
         Map<MessageType, byte[]> messageMap = (Map<MessageType, byte[]>) message;
 
         TcpHandler handler = null;
@@ -110,7 +108,6 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
                 if (verifyUser(messageMap.get(msgType), session)) {
                     authorizedSession.add(sessionId);
                     logger.info("Authorize devices {}", authorizedSession);
-//                    messageReceived(session, message);
                     session.write(loginHandler.handle(messageMap.get(msgType), session));
                 }
             } else if (authorizedSession.contains(sessionId)) {
@@ -149,12 +146,8 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
                         IoFuture future = session.write(msg);
 //                        future.awaitUninterruptibly();
                     } else {
-                        logger.info("return is null, not sent back to client");
+                        logger.info("return is null, not sent back to tcp client device");
                     }
-
-//                    deviceControl(session);
-//                    powerControl(session);
-
 
                 } else {
                     logger.error("There is no handler for message type {}", msgType);
@@ -254,16 +247,17 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
 
         request.parse(message);
 
-        if (null != request.getMac() && null != request.getMac() && isValid()) {
+        byte[] mac = request.getMac();
+        if (null != mac && isValid()) {
 
-            logger.info("Login device: {}", ByteArrayUtil.toHexString(request.getMac()));
+            logger.info("Login device: {}", ByteArrayUtil.toHexString(mac));
 
             isAuthroized = true;
-            String sessionKey = SessionUtil.createSessionKey(request.getCenterId(), request.getMac());
-            Initialization init = Initialization.getInstance();
+            String sessionKey = SessionUtil.createSessionKey(request.getCenterId(), mac);
+            Initialization init = getInstance();
             HashMap<String, DeviceInfo> clientMap = init.getClientMap();
 
-            DeviceInfo deviceInfo = new DeviceInfo();
+            DeviceInfo deviceInfo = new DeviceInfo(ByteArrayUtil.toHexString(mac));
             deviceInfo.setSession(session);
             deviceInfo.setMessageHeader(request.getHeader());
 
@@ -281,7 +275,7 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
 
     @Override
     public void messageSent(IoSession ioSession, Object o) throws Exception {
-        logger.info("Message is Sent.");
+        logger.info("Message is sent for session [{}].", ioSession.getId());
     }
 
 
