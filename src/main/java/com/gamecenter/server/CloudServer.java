@@ -25,6 +25,7 @@ public class CloudServer {
         CounterProxy counterProxy = new CounterProxy(executor);
         PowerProxy powerProxy = new PowerProxy(executor);
         DeviceListProxy deviceListProxy = new DeviceListProxy();
+        httpService.register(new HttpResourceHandler());
         httpService.register(new CounterRecordHttpHandler(counterProxy));
         httpService.register(new TopupHttpHandler(counterProxy));
         httpService.register(new CounterRecordHttpHandler(counterProxy));

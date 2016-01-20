@@ -19,9 +19,15 @@
                     <include>**/*.properties</include>
                     <include>**/*.xml</include>
                     <include>**/*.tld</include>
+                    <include>**/*.html</include>
+                    <include>**/*.jpeg</include>
+                    <include>**/*.jpg</include>
+                    <include>**/*.css</include>
+                    <include>**/*.js</include>
+                    <include>**/*.png</include>
                 </includes>
-                <!--<filtering>false</filtering>-->
-                <targetPath>${project.build.directory}</targetPath>
+                <filtering>false</filtering>
+                <!--<targetPath>${project.build.directory}</targetPath>-->
             </resource>
         </resources>
         <plugins>

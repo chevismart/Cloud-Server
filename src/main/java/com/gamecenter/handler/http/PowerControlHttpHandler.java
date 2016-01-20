@@ -15,8 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-import static com.gamecenter.constants.ServerConstants.JsonConst.MAC;
-import static com.gamecenter.constants.ServerConstants.JsonConst.POWER_SWITCHER;
+import static com.gamecenter.constants.ServerConstants.JsonConst.*;
 import static org.apache.commons.lang.StringUtils.EMPTY;
 
 public class PowerControlHttpHandler extends AbstractHttpRequestHandler {
@@ -42,8 +41,8 @@ public class PowerControlHttpHandler extends AbstractHttpRequestHandler {
             try {
                 power = (Power) powerProxy.powerControl(deviceInfo, isOn).getResult();
                 Map<String, String> respMap = new HashMap<String, String>();
-                respMap.put(ServerConstants.JsonConst.POWER_STATUS, String.valueOf(power.isStatus()));
-                respMap.put(ServerConstants.JsonConst.POWER_STATUS_UPDATE_TIME, deviceInfo.getPower().getUpdateTime().toString());
+                respMap.put(POWER_STATUS, String.valueOf(power.isStatus()));
+                respMap.put(POWER_STATUS_UPDATE_TIME, deviceInfo.getPower().getUpdateTime().toString());
                 response = JSONObject.toJSONString(respMap);
 
             } catch (TimeoutException e) {

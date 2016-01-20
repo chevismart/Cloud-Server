@@ -3,7 +3,6 @@ package com.gamecenter.handler.http;
 import com.alibaba.fastjson.JSONObject;
 import com.gamecenter.handler.tcp.DeviceListProxy;
 import com.gamecenter.server.http.AbstractHttpRequestHandler;
-import com.google.common.collect.Maps;
 import com.sun.net.httpserver.HttpExchange;
 
 import java.util.List;
@@ -22,7 +21,7 @@ public class DeviceListHandler extends AbstractHttpRequestHandler {
         String centerId = getParameter(httpExchange, CENTER_ID);
         List<String> devicesMacList = deviceListProxy.getOninceDevicesByCenterId(centerId);
         logger.info("The mac list of center id {} is {}", centerId, devicesMacList);
-        return JSONObject.toJSONString(Maps.newHashMap().put("mac", devicesMacList));
+        return JSONObject.toJSONString(devicesMacList);
     }
 
     public String uri() {

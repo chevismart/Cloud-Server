@@ -18,10 +18,11 @@ public abstract class AbstractHttpRequestHandler implements HttpRequestHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String response = process(httpExchange);
         OutputStream out = httpExchange.getResponseBody();  //获得输出流
-        httpExchange.sendResponseHeaders(getStatusCode(response), response.length()); //设置响应头属性及响应信息的长度
         httpExchange.getResponseHeaders().set("Content-Type", "application/json");
-        logger.debug("Response is {}",response);
-        logger.debug("Status code is {}", getStatusCode(response));
+        httpExchange.getResponseHeaders().set("Connection", "close");
+        httpExchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+        httpExchange.sendResponseHeaders(getStatusCode(response), response.length()); //设置响应头属性及响应信息的长度
+        logger.debug("Response is {} and status code is {}",response, getStatusCode(response));
         out.write(response.getBytes());
         out.flush();
         out.close();

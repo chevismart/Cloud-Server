@@ -2,7 +2,7 @@
 重置码表：http://wawaonline.net:8003/counterReset?MAC=accf233b95f6&COIN_RESET=true&PRIZE_RESET=true
 查询码表开关状态：http://wawaonline.net:8003/counterStatus?MAC=accf233b95f6
 设置码表开关：http://wawaonline.net:8003/counterSwitch?MAC=accf233b95f6&COUNTER_SWITCH=true
-查询所有在线设备：http://wawaonline.net:8003//listDevice?CENTER_ID=00000000
+查询所有在线设备：http://wawaonline.net:8003/listDevice?CENTER_ID=00000000
 加币：http://wawaonline.net:8003/topup?MAC=accf233b95f6&TOP_UP_REFERENCE_ID=ABCDEF1234&TOP_UP_COIN_QTY=1
 开关设备电源：http://wawaonline.net:8003/powerControl?MAC=accf233b95f6&POWER_SWITCHER=true
 查询设备电源状态：http://wawaonline.net:8003/powerStatus?MAC=accf233b95f6
