@@ -8,6 +8,7 @@ import org.gamecenter.serializer.messages.upStream.HeartbeatRequest;
 
 import java.io.IOException;
 
+import static com.gamecenter.utils.SessionUtil.updateDeviceOnlineTime;
 import static org.gamecenter.serializer.constants.MessageType.HeartbeatResponse;
 
 public class HeartbeatHandler implements TcpHandler {
@@ -20,6 +21,8 @@ public class HeartbeatHandler implements TcpHandler {
         MessageHeader header = request.getHeader();
         header.setMsgType(HeartbeatResponse);
         response.setHeader(header);
+        // Update the time that connecting with the device
+        updateDeviceOnlineTime(session);
         return response.build();
     }
 }

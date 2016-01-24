@@ -283,9 +283,9 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
     public void sessionIdle(IoSession session, IdleStatus status) {
 
         logger.info("Disconnecting the idle.");
-
+        SessionUtil.removeSession(session);
         // disconnect an idle client
-
+        logger.debug("Session is removed since idle.");
         session.close(true);
 
     }
@@ -296,7 +296,8 @@ public class MinaTcpLongConnServerHandler implements IoHandler {
         // close the connection on exceptional situation
 
         logger.warn(cause.getMessage(), cause);
-
+        SessionUtil.removeSession(session);
+        logger.warn("Exception is caught, remove session {}", session.getId());
         session.close(true);
 
     }

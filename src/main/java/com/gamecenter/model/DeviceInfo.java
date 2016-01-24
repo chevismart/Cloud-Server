@@ -4,13 +4,10 @@ import org.apache.mina.core.session.IoSession;
 import org.gamecenter.serializer.messages.MessageHeader;
 import org.gamecenter.serializer.utils.ByteUtil;
 
-import java.awt.peer.MouseInfoPeer;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by Chevis on 14-9-19.
- */
 public class DeviceInfo implements Model {
 
     private IoSession session;
@@ -19,12 +16,14 @@ public class DeviceInfo implements Model {
     private Map<String, TopUp> topUpHistory; // referenceId : topup
     private Power power;
     private final String mac;
+    private Date lastOnlineTime;
 
     public DeviceInfo(String mac) {
         this.mac = mac;
-        this.topUpHistory = new ConcurrentHashMap<String, TopUp>();
+        this.topUpHistory = new ConcurrentHashMap<>();
         this.counter = new Counter();
         this.power = new Power();
+        this.lastOnlineTime = new Date();
     }
 
     @Override
@@ -34,14 +33,15 @@ public class DeviceInfo implements Model {
 
         DeviceInfo that = (DeviceInfo) o;
 
-        if (counter != null ? !counter.equals(that.counter) : that.counter != null) return false;
+        if (session != null ? !session.equals(that.session) : that.session != null) return false;
         if (messageHeader != null ? !messageHeader.equals(that.messageHeader) : that.messageHeader != null)
             return false;
-        if (power != null ? !power.equals(that.power) : that.power != null) return false;
-        if (session != null ? !session.equals(that.session) : that.session != null) return false;
+        if (counter != null ? !counter.equals(that.counter) : that.counter != null) return false;
         if (topUpHistory != null ? !topUpHistory.equals(that.topUpHistory) : that.topUpHistory != null) return false;
+        if (power != null ? !power.equals(that.power) : that.power != null) return false;
+        if (mac != null ? !mac.equals(that.mac) : that.mac != null) return false;
+        return lastOnlineTime != null ? lastOnlineTime.equals(that.lastOnlineTime) : that.lastOnlineTime == null;
 
-        return true;
     }
 
     @Override
@@ -51,6 +51,8 @@ public class DeviceInfo implements Model {
         result = 31 * result + (counter != null ? counter.hashCode() : 0);
         result = 31 * result + (topUpHistory != null ? topUpHistory.hashCode() : 0);
         result = 31 * result + (power != null ? power.hashCode() : 0);
+        result = 31 * result + (mac != null ? mac.hashCode() : 0);
+        result = 31 * result + (lastOnlineTime != null ? lastOnlineTime.hashCode() : 0);
         return result;
     }
 
@@ -61,7 +63,9 @@ public class DeviceInfo implements Model {
                 ", messageHeader=" + messageHeader +
                 ", counter=" + counter +
                 ", topUpHistory=" + topUpHistory +
-                ", powerControl=" + power +
+                ", power=" + power +
+                ", mac='" + mac + '\'' +
+                ", lastOnlineTime=" + lastOnlineTime +
                 '}';
     }
 
@@ -115,5 +119,13 @@ public class DeviceInfo implements Model {
 
     public String getMac() {
         return mac;
+    }
+
+    public Date getLastOnlineTime() {
+        return lastOnlineTime;
+    }
+
+    public void setLastOnlineTime(Date lastOnlineTime) {
+        this.lastOnlineTime = lastOnlineTime;
     }
 }

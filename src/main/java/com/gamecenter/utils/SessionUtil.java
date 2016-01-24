@@ -6,6 +6,7 @@ import com.gamecenter.model.Initialization;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.mina.core.session.IoSession;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,6 +24,16 @@ public class SessionUtil {
             }
         }
         return false;
+    }
+
+    public static void updateDeviceOnlineTime(IoSession ioSession) {
+        Map<String, DeviceInfo> deviceInfoMap = Initialization.getInstance().getClientMap();
+        for (Map.Entry<String, DeviceInfo> device : deviceInfoMap.entrySet()) {
+            if (device.getValue().getSession().getId() == (ioSession.getId())) {
+                device.getValue().setLastOnlineTime(new Date());
+                return;
+            }
+        }
     }
 
     public static String createSessionKey(byte[] centerId, byte[] macAdd) {
