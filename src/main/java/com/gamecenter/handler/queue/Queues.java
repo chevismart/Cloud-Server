@@ -1,44 +1,46 @@
 package com.gamecenter.handler.queue;
 
+import com.gamecenter.model.DeviceInfo;
+import com.gamecenter.model.Initialization;
 import com.gamecenter.model.Model;
+import com.gamecenter.model.TopUp;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
+import org.apache.commons.lang.time.DateUtils;
 import org.gamecenter.serializer.constants.MessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-public class Queues {
+public class Queues implements Callable<String> {
 
     public final static Queues instance = new Queues();
 
-    private final Table<MessageType, String, List<QueueEntry<Model>>> queues = HashBasedTable.create();
+    private final Table<MessageType, String, ConcurrentLinkedQueue<QueueEntry<Model>>> queues = HashBasedTable.create();
     private final Logger logger = LoggerFactory.getLogger(Queues.class);
 
     public void put(MessageType messageType, String deviceId, QueueEntry<Model> queueEntry) {
-        List<QueueEntry<Model>> queueEntryList = queues.get(messageType, deviceId);
+        ConcurrentLinkedQueue<QueueEntry<Model>> queueEntryList = queues.get(messageType, deviceId);
         if (queueEntryList == null) {
-            queueEntryList = newArrayList();
+            queueEntryList = new ConcurrentLinkedQueue<>();
             queues.put(messageType, deviceId, queueEntryList);
         }
         queueEntryList.add(queueEntry);
     }
 
     public void consume(MessageType messageType, String deviceId, Model model) {
-        List<QueueEntry<Model>> queueEntryList = queues.get(messageType, deviceId);
+        ConcurrentLinkedQueue<QueueEntry<Model>> queueEntryList = queues.get(messageType, deviceId);
         if (queueEntryList != null) {
-            List<QueueEntry<Model>> toBeRemoved = newArrayList();
             logger.debug("Queue list size is {}", queueEntryList.size());
             for (QueueEntry<Model> entry : queueEntryList) {
                 entry.setResult(model);
                 entry.ready();
-                toBeRemoved.add(entry);
-            }
-            synchronized (queues) {
-                queueEntryList.removeAll(toBeRemoved);
             }
         } else {
             logger.warn("Queue not found for {}", deviceId);
@@ -50,5 +52,24 @@ public class Queues {
         return "Queues{" +
                 "queues=" + queues +
                 '}';
+    }
+
+    public String call() throws Exception {
+        logger.debug("Start to cleanup topup history.");
+        Date now = new Date();
+        for (DeviceInfo deviceInfo : Initialization.getInstance().getClientMap().values()) {
+            List<String> toBeRemoved = Lists.newArrayList();
+            for (Map.Entry<String, TopUp> entry : deviceInfo.getTopUpHistory().entrySet()) {
+                if (DateUtils.addMinutes(entry.getValue().getUpdateTime(), 5).after(now)) {
+                    toBeRemoved.add(entry.getKey());
+                }
+            }
+            for (String refId : toBeRemoved) {
+                deviceInfo.getTopUpHistory().remove(refId);
+                logger.info("Clear topup history for {}", refId);
+            }
+        }
+        logger.debug("Cleanup topup history end.");
+        return null;
     }
 }

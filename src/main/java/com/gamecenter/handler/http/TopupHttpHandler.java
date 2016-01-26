@@ -3,7 +3,6 @@ package com.gamecenter.handler.http;
 import ch.qos.logback.core.encoder.ByteArrayUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.gamecenter.constants.ServerConstants;
-import com.gamecenter.handler.queue.QueueEntry;
 import com.gamecenter.handler.tcp.CounterProxy;
 import com.gamecenter.model.DeviceInfo;
 import com.gamecenter.model.TopUp;
@@ -15,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.gamecenter.constants.ServerConstants.JsonConst.*;
+import static org.apache.commons.lang.StringUtils.EMPTY;
 
 public class TopupHttpHandler extends AbstractHttpRequestHandler {
 
@@ -44,6 +44,7 @@ public class TopupHttpHandler extends AbstractHttpRequestHandler {
                         topup = (TopUp) counterProxy.topUpCoins(deviceInfo, coinQty, refId).getResult();
                     } else {
                         logger.warn("Reference [{}] topup request is requested and under processing, waiting for the response.", refId);
+                        return EMPTY;
                     }
 
                 } catch (Exception e) {
@@ -51,6 +52,7 @@ public class TopupHttpHandler extends AbstractHttpRequestHandler {
                 }
             } else {
                 logger.warn("Reference Id {} has been processed, request aborted!", refId);
+                return EMPTY;
             }
 
         } else {

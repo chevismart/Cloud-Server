@@ -18,7 +18,7 @@ public class SessionUtil {
     public static boolean removeSession(IoSession ioSession) {
         Map<String, DeviceInfo> deviceInfoMap = Initialization.getInstance().getClientMap();
         for (Map.Entry<String, DeviceInfo> deviceInfo : deviceInfoMap.entrySet()) {
-            if (deviceInfo.getValue().getSession().equals(ioSession)) {
+            if (deviceInfo.getValue().getSession().getId()==(ioSession.getId())) {
                 deviceInfoMap.remove(deviceInfo.getKey());
                 return true;
             }

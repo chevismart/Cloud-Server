@@ -47,7 +47,6 @@ public class TopUpHandler implements TcpHandler {
 
                     queues.consume(TopUpRequest, deviceInfo.getMac(), topUp);
                     logger.info("Handle top up for {} successfully: {}", topUp.getReferenceId(), topUp);
-                    topUpHistory.remove(response.getReferenceId());
                 } else {
                     logger.warn("Top up history not found for refId: [{}]", response.getReferenceId());
                 }

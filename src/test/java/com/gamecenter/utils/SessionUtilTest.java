@@ -103,6 +103,7 @@ public class SessionUtilTest {
         IoSession onLineSession = mock(IoSession.class);
         when(deviceInfo.getSession()).thenReturn(ioSession);
         DeviceInfo onlineDevice = mock(DeviceInfo.class);
+        when(ioSession.getId()).thenReturn(1L);
         when(onlineDevice.getSession()).thenReturn(onLineSession);
         Initialization.getInstance().getClientMap().put("1", deviceInfo);
         Initialization.getInstance().getClientMap().put("2", onlineDevice);

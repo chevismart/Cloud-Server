@@ -28,7 +28,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class CloudServer {
 
-
+    private static final Logger logger = LoggerFactory.getLogger(CloudServer.class);
     private static final Queues queues = Queues.instance;
     private static final TcpMessageExecutor executor = new TcpMessageExecutor(queues);
 
@@ -51,27 +51,25 @@ public class CloudServer {
         httpService.register(new PowerStatusHttpHandler(powerProxy));
         httpService.register(new DeviceListHandler(deviceListProxy));
 
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
         executor.scheduleAtFixedRate(
                 new FutureTask<>(new Callable<String>() {
                     public String call() throws Exception {
-                        Logger logger = LoggerFactory.getLogger(this.getClass());
                         logger.info("Scheduled task for session management start!");
                         Date now = new Date();
                         List<DeviceInfo> toBeRemoved = Lists.newArrayList();
                         for (DeviceInfo deviceInfo : Initialization.getInstance().getClientMap().values()) {
-                            if(DateUtils.addMinutes(deviceInfo.getLastOnlineTime(),5).before(now))
+                            if (DateUtils.addMinutes(deviceInfo.getLastOnlineTime(), 5).before(now))
                                 toBeRemoved.add(deviceInfo);
                         }
-                        for(DeviceInfo deviceInfo : toBeRemoved){
+                        for (DeviceInfo deviceInfo : toBeRemoved) {
                             SessionUtil.removeSession(deviceInfo.getSession());
                             logger.info("Device session(mac={}) is removed.", deviceInfo.getMac());
                         }
                         return null;
                     }
-                }),
-                0,
-                60000,
-                MILLISECONDS);
+                }), 0, 60000, MILLISECONDS);
+
+        executor.scheduleAtFixedRate(new FutureTask<>(queues), 0, 5000, MILLISECONDS);
     }
 }

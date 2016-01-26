@@ -6,7 +6,7 @@ import org.apache.commons.lang.time.DateUtils;
 import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
-public class QueueEntryImpl implements QueueEntry<Model>{
+public class  QueueEntryImpl implements QueueEntry<Model>{
 
     private final int timeout;
     private final Date startWatingTime;
