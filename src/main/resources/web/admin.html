@@ -2,67 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0,user-scalable=0">
     <script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript" src="js/admin.js"></script>
     <title>Testing page</title>
     <script type="application/javascript">
-        $.get("http://wawaonline.net:8003/listDevice?CENTER_ID=00000000", function (data, status) {
-            $(eval(data)).each(function () {
-                $("#mac").append('<option value=' + this + '>' + this + '</option>');
-            });
-        });
-        function checkCounter() {
-            get("http://wawaonline.net:8003/counterRecord?MAC=" + $("#mac").val() + "&COIN_QTY=true&PRIZE_QTY=true");
-        }
-        function resetCounter() {
-            get("http://wawaonline.net:8003/counterReset?MAC=" + $("#mac").val() + "&COIN_QTY=true&PRIZE_QTY=true");
-        }
-        function statusCounter() {
-            get("http://wawaonline.net:8003/counterStatus?MAC=" + $("#mac").val());
-        }
-        function switchCounter() {
-            get("http://wawaonline.net:8003/counterSwitch?MAC=" + $("#mac").val() + "&COUNTER_SWITCH="+$("#counterStatus").val());
-        }
-        function topup() {
-            //http://wawaonline.net:8003/topup?MAC=accf233b95f6&TOP_UP_REFERENCE_ID=ABCDEF1234&TOP_UP_COIN_QTY=1
-            get("http://wawaonline.net:8003/topup?MAC=" + $("#mac").val() + "&TOP_UP_REFERENCE_ID=ABCDEF1234&TOP_UP_COIN_QTY="+$("#coin").val());
-        }
-        function powerstatus() {
-            //http://wawaonline.net:8003/powerStatus?MAC=accf233b95f6
-            get("http://wawaonline.net:8003/powerStatus?MAC=" + $("#mac").val());
-        }
-        function switchPower() {
-            //http://wawaonline.net:8003/powerControl?MAC=accf233b95f6&POWER_SWITCHER=true
-            get("http://wawaonline.net:8003/powerControl?MAC=" + $("#mac").val()+"&POWER_SWITCHER="+$("#powerStatus").val());
-        }
-
-        function get(url) {
-            $.get(url, function (data, status) {
-                var json = eval(data);
-                $("#response").text(JSON.stringify(data))
-            });
-        }
+        refreshDevice();
     </script>
 </head>
-<body>
+<body style="font-size: 1.2em;">
 <div ng-app="">
-    <div><label for="mac">在线设备：</label><select id="mac"></select></div>
+    <div>
+        <label for="mac">在线设备：</label>
+        <select id="mac"></select>
+        <a href="javascript:void(0)" onclick="refreshDevice()">刷新</a>
+    </div>
+
     </br>
-    <div><a href="javascript:void(0)" onclick="topup()">加币</a><input id="coin" size="1" value="1"/><span>个</span></div>
-    <div><a href="javascript:void(0)" onclick="checkCounter()">查询计数器读数</a></div>
-    <div><a href="javascript:void(0)" onclick="resetCounter()">重置计数器</a></div>
-    <div><a href="javascript:void(0)" onclick="statusCounter()">查询计数器开关状态</a></div>
-    <div><a href="javascript:void(0)" onclick="switchCounter()">开关计数器:</a><select id="counterStatus">
-        <option value="true">开</option>
-        <option value="false">关</option>
-    </select>
-    </div>
-    <div><a href="javascript:void(0)" onclick="powerstatus()">查询设备电源状态</a></div>
-    <div><a href="javascript:void(0)" onclick="switchPower()">开关电源:</a><select id="powerStatus">
-        <option value="true">开</option>
-        <option value="false">关</option>
-    </select>
-    </div>
+    <ul>
+        <li><input id="coin" size="1" value="1"
+                   style="width:50px"/><span>个 </span><a href="javascript:void(0)" onclick="topup()">：加币</a><span>个</span></li>
+        <li><a href="javascript:void(0)" onclick="checkCounter()">查询计数器读数</a></li>
+        <li><a href="javascript:void(0)" onclick="resetCounter()">重置计数器</a></li>
+        <li><a href="javascript:void(0)" onclick="statusCounter()">查询计数器开关状态</a></li>
+        <li><a href="javascript:void(0)" onclick="switchCounter()">开关计数器:  </a><select id="counterStatus">
+            <option value="true">开</option>
+            <option value="false">关</option>
+        </select>
+        </li>
+        <li><a href="javascript:void(0)" onclick="powerstatus()">查询设备电源状态</a></li>
+        <li><a href="javascript:void(0)" onclick="switchPower()">开关电源:  </a><select id="powerStatus">
+            <option value="true">开</option>
+            <option value="false">关</option>
+        </select>
+        </li>
+    </ul>
     <!--<p>名字 : <input type="text" ng-model="name"></p>-->
     <!--<h1>Hello {{name}}</h1>-->
     </br>

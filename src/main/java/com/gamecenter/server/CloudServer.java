@@ -19,12 +19,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class CloudServer {
 
@@ -53,8 +51,8 @@ public class CloudServer {
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
         executor.scheduleAtFixedRate(
-                new FutureTask<>(new Callable<String>() {
-                    public String call() throws Exception {
+                new Runnable() {
+                    public void run() {
                         logger.info("Scheduled task for session management start!");
                         Date now = new Date();
                         List<DeviceInfo> toBeRemoved = Lists.newArrayList();
@@ -66,10 +64,10 @@ public class CloudServer {
                             SessionUtil.removeSession(deviceInfo.getSession());
                             logger.info("Device session(mac={}) is removed.", deviceInfo.getMac());
                         }
-                        return null;
+                        logger.info("Scheduled task for session management end!");
                     }
-                }), 0, 60000, MILLISECONDS);
+                }, 0, 60, SECONDS);
 
-        executor.scheduleAtFixedRate(new FutureTask<>(queues), 0, 5000, MILLISECONDS);
+        executor.scheduleAtFixedRate(queues, 0, 30, SECONDS);
     }
 }

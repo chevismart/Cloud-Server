@@ -15,10 +15,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Queues implements Callable<String> {
+public class Queues implements Runnable {
 
     public final static Queues instance = new Queues();
 
@@ -54,7 +53,7 @@ public class Queues implements Callable<String> {
                 '}';
     }
 
-    public String call() throws Exception {
+    public void run() {
         logger.debug("Start to cleanup topup history.");
         Date now = new Date();
         for (DeviceInfo deviceInfo : Initialization.getInstance().getClientMap().values()) {
@@ -70,6 +69,5 @@ public class Queues implements Callable<String> {
             }
         }
         logger.debug("Cleanup topup history end.");
-        return null;
     }
 }
